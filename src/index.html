@@ -3,11 +3,549 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CAES — Constitutional AI Execution Standard · v0.1.1 (Draft)</title>
+<title>CAES — Constitutional AI Execution Standard · v0.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --paper: #f7f6f2;
+    --paper-warm: #f0ede6;
+    --ink: #1a1a1a;
+    --ink-mid: #4a4a4a;
+    --ink-light: #8a8a8a;
+    --ink-ghost: #c0bdb8;
+    --rule: #d8d4cc;
+    --teal: #1a6b5e;
+    --teal-light: #2a9b88;
+    --teal-pale: rgba(26, 107, 94, 0.06);
+    --red: #8b2020;
+    --mono: 'DM Mono', monospace;
+    --serif: 'Libre Baskerville', serif;
+    --display: 'Syne', sans-serif;
+    --col-width: 680px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  /* ─── HEADER BAR ─── */
+  .site-header {
+    border-bottom: 2px solid var(--ink);
+    padding: 0;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .header-org {
+    padding: 12px 32px;
+    border-right: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-mid);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-org-dot {
+    width: 6px; height: 6px;
+    background: var(--teal);
+    border-radius: 50%;
+  }
+
+  .header-nav {
+    display: flex;
+    align-items: stretch;
+    margin-left: auto;
+  }
+  .header-nav a {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mid);
+    text-decoration: none;
+    padding: 12px 20px;
+    border-left: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    transition: background 0.15s, color 0.15s;
+  }
+  .header-nav a:hover { background: var(--paper-warm); color: var(--ink); }
+  .header-nav a.active { color: var(--teal); background: var(--teal-pale); }
+
+  /* RFC-style document header */
+  .doc-header {
+    padding: 48px 32px 40px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: start;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .doc-title-block {}
+
+  .doc-std-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 12px;
+  }
+
+  .doc-title {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 36px;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .doc-subtitle {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 20px;
+    color: var(--ink-mid);
+    margin-bottom: 20px;
+  }
+
+  .doc-formal {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    line-height: 1.8;
+  }
+
+  .doc-meta-block {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .version-badge {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    padding: 6px 14px;
+    margin-bottom: 16px;
+  }
+
+  .doc-meta-table {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-light);
+    text-align: right;
+    line-height: 2;
+  }
+  .doc-meta-table .label { color: var(--ink-ghost); margin-right: 8px; }
+  .doc-meta-table .val { color: var(--ink-mid); }
+
+  /* ─── LAYOUT ─── */
+  .page-body {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    max-width: 1100px;
+    margin: 0 auto;
+    border-top: 1px solid var(--rule);
+    min-height: 100vh;
+  }
+
+  /* ─── SIDEBAR TOC ─── */
+  .sidebar {
+    border-right: 1px solid var(--rule);
+    padding: 40px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .toc-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-ghost);
+    padding: 0 28px 16px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 16px;
+  }
+
+  .toc-section {
+    margin-bottom: 4px;
+  }
+
+  .toc-section-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-ghost);
+    padding: 12px 28px 4px;
+  }
+
+  .toc-link {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mid);
+    text-decoration: none;
+    padding: 5px 28px;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    line-height: 1.4;
+  }
+  .toc-link:hover { color: var(--ink); border-left-color: var(--ink-ghost); }
+  .toc-link.active { color: var(--teal); border-left-color: var(--teal); background: var(--teal-pale); }
+
+  /* ─── MAIN CONTENT ─── */
+  main {
+    padding: 48px 64px 96px;
+    max-width: 760px;
+  }
+
+  /* RFC-style section headers */
+  .spec-section {
+    margin-bottom: 56px;
+    padding-bottom: 56px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .spec-section:last-child { border-bottom: none; }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--ink-ghost);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 20px;
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin: 28px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  p {
+    margin-bottom: 16px;
+    color: var(--ink-mid);
+  }
+  p strong { color: var(--ink); font-weight: 700; }
+
+  /* Abstract callout */
+  .abstract-block {
+    background: var(--paper-warm);
+    border-left: 3px solid var(--ink);
+    padding: 20px 24px;
+    margin: 24px 0;
+    font-style: italic;
+    color: var(--ink-mid);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* NORMATIVE requirements */
+  .normative-block {
+    border: 1px solid var(--rule);
+    background: var(--paper-warm);
+    margin: 24px 0;
+  }
+
+  .normative-header {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--ink);
+    padding: 6px 16px;
+    display: inline-block;
+  }
+
+  .normative-body {
+    padding: 16px 20px;
+  }
+
+  .req-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: start;
+  }
+  .req-row:last-child { border-bottom: none; }
+
+  .req-id {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-ghost);
+    padding-top: 2px;
+  }
+
+  .req-text {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  .req-text .must {
+    color: var(--red);
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  /* Version table */
+  .version-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 11px;
+    margin: 20px 0;
+  }
+  .version-table th {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 2px solid var(--ink);
+    color: var(--ink);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 9px;
+  }
+  .version-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink-mid);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .version-table tr:hover td { background: var(--paper-warm); }
+  .version-table .ver { color: var(--teal); font-weight: 500; }
+  .version-table .current td { background: var(--teal-pale); }
+
+  /* Compliance tiers */
+  .tier-block {
+    border: 1px solid var(--rule);
+    margin: 16px 0;
+    overflow: hidden;
+  }
+
+  .tier-header {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    align-items: center;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .tier-level {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--ink);
+    padding: 10px 16px;
+    text-align: center;
+  }
+  .tier-level.l1 { background: var(--teal); }
+  .tier-level.l2 { background: var(--teal-light); }
+  .tier-level.l3 { background: var(--ink); }
+
+  .tier-name {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 10px 16px;
+    color: var(--ink);
+  }
+
+  .tier-reqs {
+    padding: 12px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mid);
+    line-height: 2;
+  }
+  .tier-reqs span {
+    display: inline-block;
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 1px 8px;
+    margin: 2px 4px 2px 0;
+    font-size: 10px;
+    color: var(--ink);
+  }
+
+  /* Charter block */
+  .charter-block {
+    border: 2px solid var(--ink);
+    padding: 28px 32px;
+    margin: 24px 0;
+    position: relative;
+  }
+  .charter-block::before {
+    content: 'CHARTER';
+    position: absolute;
+    top: -10px; left: 20px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--paper);
+    background: var(--ink);
+    padding: 2px 10px;
+  }
+  .charter-block p {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--ink);
+    font-style: italic;
+    margin: 0;
+  }
+
+  /* Reference impl block */
+  .ref-impl-block {
+    border: 1px solid var(--teal);
+    background: var(--teal-pale);
+    padding: 24px 28px;
+    margin: 24px 0;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+  }
+  .ref-impl-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 6px;
+  }
+  .ref-impl-name {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .ref-impl-desc {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mid);
+    margin: 0;
+  }
+  .ref-impl-link {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal);
+    text-decoration: none;
+    border: 1px solid var(--teal);
+    padding: 10px 18px;
+    white-space: nowrap;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .ref-impl-link:hover { background: var(--teal); color: var(--paper); }
+
+  /* Working group members */
+  .wg-block {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mid);
+    line-height: 2;
+    border: 1px solid var(--rule);
+    padding: 20px 24px;
+    margin: 20px 0;
+  }
+  .wg-block .wg-role {
+    color: var(--ink-ghost);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: inline-block;
+    min-width: 140px;
+  }
+
+  /* Inline code */
+  code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 1px 6px;
+    color: var(--ink);
+  }
+
+  /* Note blocks */
+  .note {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    border-left: 2px solid var(--rule);
+    padding: 8px 16px;
+    margin: 16px 0;
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 2px solid var(--ink);
+    padding: 24px 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-ghost);
+    background: var(--paper-warm);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  footer a { color: var(--teal); text-decoration: none; }
+</style>
 </head>
 <body>
 
@@ -23,7 +561,6 @@
       <a href="#versions">Version History</a>
       <a href="#normative">Requirements</a>
       <a href="#compliance">Compliance</a>
-      <a href="#non-compliant">Non-Compliant</a>
       <a href="#reference">Reference Impl</a>
       <a href="#charter">Charter</a>
     </nav>
@@ -32,16 +569,14 @@
   <div class="doc-header">
     <div class="doc-title-block">
       <div class="doc-std-label">Constitutional AI Execution Standard</div>
-      <div class="doc-title">
-        CAES
-      </div>
+      <div class="doc-title">CAES</div>
       <div class="doc-subtitle">A formal specification for policy-bound AI execution</div>
       <div class="doc-formal">
         Category: Normative Specification &nbsp;·&nbsp; Status: Draft &nbsp;·&nbsp; Working Group: CAES-WG
       </div>
     </div>
     <div class="doc-meta-block">
-      <div class="version-badge">v0.1.1 DRAFT</div>
+      <div class="version-badge">v0.1 DRAFT</div>
       <div class="doc-meta-table">
         <div><span class="label">Published</span><span class="val">March 2026</span></div>
         <div><span class="label">Authors</span><span class="val">CAES-WG</span></div>
@@ -64,30 +599,27 @@
       <a href="#overview" class="toc-link active">1. Overview</a>
       <a href="#scope" class="toc-link">2. Scope</a>
       <a href="#definitions" class="toc-link">3. Definitions</a>
-      <a href="#effect-boundary" class="toc-link toc-new">4. Effect Boundary</a>
     </div>
 
     <div class="toc-section">
       <div class="toc-section-label">Specification</div>
-      <a href="#normative" class="toc-link">5. Normative Requirements</a>
-      <a href="#primitives" class="toc-link">6. Core Primitives</a>
-      <a href="#causal-chain" class="toc-link">7. Causal Chain</a>
-      <a href="#authority" class="toc-link">8. Authority Model</a>
+      <a href="#normative" class="toc-link">4. Normative Requirements</a>
+      <a href="#primitives" class="toc-link">5. Core Primitives</a>
+      <a href="#causal-chain" class="toc-link">6. Causal Chain</a>
+      <a href="#authority" class="toc-link">7. Authority Model</a>
     </div>
 
     <div class="toc-section">
       <div class="toc-section-label">Adoption</div>
-      <a href="#compliance" class="toc-link">9. Compliance Criteria</a>
-      <a href="#conformance-claims" class="toc-link toc-new">10. Conformance Claims</a>
-      <a href="#non-compliant" class="toc-link toc-new">11. Non-Compliant Patterns</a>
-      <a href="#reference" class="toc-link">12. Reference Implementation</a>
-      <a href="#versions" class="toc-link">13. Version History</a>
+      <a href="#compliance" class="toc-link">8. Compliance Criteria</a>
+      <a href="#reference" class="toc-link">9. Reference Implementation</a>
+      <a href="#versions" class="toc-link">10. Version History</a>
     </div>
 
     <div class="toc-section">
       <div class="toc-section-label">Governance</div>
-      <a href="#charter" class="toc-link">14. Working Group Charter</a>
-      <a href="#process" class="toc-link">15. Amendment Process</a>
+      <a href="#charter" class="toc-link">11. Working Group Charter</a>
+      <a href="#process" class="toc-link">12. Amendment Process</a>
     </div>
   </aside>
 
@@ -104,7 +636,7 @@
       <p>Artificial intelligence systems have crossed from advisory to operational capability. They now commit transactions, modify infrastructure, and make decisions at a scale and velocity that exceeds human review. This shift introduces a structural accountability gap: the absence of a formal standard for what it means to <strong>authorize</strong> an AI-initiated action and <strong>prove</strong> that authorization occurred.</p>
       <p>CAES addresses this gap. It does not prescribe implementation architecture. It defines the normative properties that any conformant system <strong>must</strong> provide — regardless of the underlying technology, deployment model, or AI provider.</p>
       <div class="note">
-        This specification is normative. The keyword MUST indicates an absolute requirement. MUST NOT indicates an absolute prohibition. SHOULD indicates a recommendation. MAY indicates an option. Usage follows RFC 2119.
+        This specification is normative. The keyword MUST indicates an absolute requirement. SHOULD indicates a recommendation. MAY indicates an option. Usage follows RFC 2119.
       </div>
     </section>
 
@@ -114,12 +646,12 @@
       <h2>Scope</h2>
       <p>This specification applies to any AI system — agent, model, or automated pipeline — that:</p>
       <p>
-        (a) Produces effects beyond the boundary of its own process state (see <a href="#effect-boundary" style="color:var(--teal)">Section 4: Effect Boundary</a>);<br>
+        (a) Produces effects beyond the boundary of its own process state;<br>
         (b) Operates in an environment subject to regulatory, legal, or financial accountability;<br>
         (c) Executes actions that a human or policy authority must be able to verify after the fact.
       </p>
-      <p>CAES does not apply to purely advisory systems — those whose output requires explicit human mediation before real-world effect occurs. The boundary is the Effect Boundary: if the AI can cause effects without a human completing a separate, independent action, CAES scope applies.</p>
-      <div class="note">An Effect Boundary is crossed even when the AI system does not directly execute the operation, but causes it through an intermediary — including human operators, automation platforms, schedulers, or downstream services. See Section 4 for the complete definition.</div>
+      <p>CAES does not apply to purely advisory systems — those whose output requires explicit human mediation before real-world effect occurs. The boundary is the execution gate: if the AI can cause effects without a human completing a separate action, CAES scope applies.</p>
+      <div class="note">Pure read operations without side effects are out of scope unless they cross a tenant or authorization boundary that itself constitutes a governed event.</div>
     </section>
 
     <!-- 3. DEFINITIONS -->
@@ -135,11 +667,7 @@
           </div>
           <div class="req-row">
             <div class="req-id">PolicyHash</div>
-            <div class="req-text">A deterministic hash of the canonical policy state active at evaluation time. Computed from a canonical representation such that semantically identical policies yield identical hashes. Enables independent verification that policy has not been altered since the decision was made.</div>
-          </div>
-          <div class="req-row">
-            <div class="req-id">Effect Boundary</div>
-            <div class="req-text">A boundary crossed when an AI system's output produces, initiates, or materially influences effects outside the agent's isolated computation context. See <a href="#effect-boundary" style="color:var(--teal)">Section 4</a> for the complete normative definition.</div>
+            <div class="req-text">A deterministic hash of the canonical policy state active at evaluation time. Enables independent verification that policy has not been altered since the decision was made.</div>
           </div>
           <div class="req-row">
             <div class="req-id">Execution Gate</div>
@@ -147,15 +675,11 @@
           </div>
           <div class="req-row">
             <div class="req-id">Governed Spine</div>
-            <div class="req-text">An append-only, causally ordered, tenant-scoped record of all governed events. Serves as the authoritative forensic record. Not a log. Mutations are not permitted. Every event carries causal parent reference(s) sufficient to reconstruct a deterministic partial order.</div>
-          </div>
-          <div class="req-row">
-            <div class="req-id">Trigger</div>
-            <div class="req-text">The originating event that created the execution scope. In cases of retry, the retry references the original Trigger identity. A new Trigger creates a new spine. Scheduled or multi-source fan-in events each constitute a distinct Trigger.</div>
+            <div class="req-text">An append-only, causally ordered record of all governed events. Serves as the authoritative forensic record. Not a log. Mutations are not permitted.</div>
           </div>
           <div class="req-row">
             <div class="req-id">Denial Receipt</div>
-            <div class="req-text">An affirmative governance artifact produced when an action is denied. Constitutes proof that the constraint functioned as designed. Structurally equivalent to an approval receipt.</div>
+            <div class="req-text">An affirmative governance artifact produced when an action is denied. Constitutes proof that the constraint functioned as designed.</div>
           </div>
           <div class="req-row">
             <div class="req-id">Fail-Closed</div>
@@ -163,203 +687,112 @@
           </div>
           <div class="req-row">
             <div class="req-id">Human Authority</div>
-            <div class="req-text">A cryptographically bound delegation by a human operator authorizing a specific action. Not an approval click. A signed, narrow, scoped authorization artifact with explicit temporal validity.</div>
+            <div class="req-text">A cryptographically bound delegation by a human operator authorizing a specific action. Not an approval click. A signed, narrow, scoped authorization artifact.</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 4. EFFECT BOUNDARY (NEW) -->
-    <section class="spec-section" id="effect-boundary">
-      <div class="section-num">Section 04</div>
-      <h2>Effect Boundary</h2>
-      <div class="abstract-block">
-        An Effect Boundary is crossed when an AI system's output produces, initiates, or materially influences effects outside the agent's isolated computation context. This definition is the "no loopholes" clause. It prevents claiming advisory status while producing consequential effects.
-      </div>
-
-      <p>An Effect Boundary event occurs when any of the following categories of effect are produced, initiated, or materially influenced by an AI system — whether directly or through an intermediary (human operator, automation platform, scheduler, or downstream service).</p>
-
-      <h3>Effect Categories</h3>
-      <div class="normative-block">
-        <div class="normative-header">Normative — Effect Boundary Categories</div>
-        <div class="normative-body">
-          <div class="eb-category">
-            <div class="eb-num">1</div>
-            <div>
-              <div class="eb-title">Digital State Change</div>
-              <p class="eb-desc">Mutations to systems of record, configuration, data stores, access controls, financial systems, or infrastructure.</p>
-            </div>
-          </div>
-          <div class="eb-category">
-            <div class="eb-num">2</div>
-            <div>
-              <div class="eb-title">External System Interaction</div>
-              <p class="eb-desc">Any API call, network request, message publish, job enqueue, tool invocation, or command execution against a system not wholly contained within the agent process.</p>
-            </div>
-          </div>
-          <div class="eb-category">
-            <div class="eb-num">3</div>
-            <div>
-              <div class="eb-title">Information Release / Communication Effect</div>
-              <p class="eb-desc">Any output delivered to a human or external party that can reasonably be acted upon as instruction, authorization, representation, or decision — including email, chat, voice, UI output, or generated documents.</p>
-            </div>
-          </div>
-          <div class="eb-category">
-            <div class="eb-num">4</div>
-            <div>
-              <div class="eb-title">Human Contact / Behavioral Influence</div>
-              <p class="eb-desc">Any interaction intended or likely to influence human behavior, perception, consent, or decision-making in a consequential context — e.g., medical guidance, financial direction, legal instruction, HR decisions, safety-critical commands.</p>
-            </div>
-          </div>
-          <div class="eb-category">
-            <div class="eb-num">5</div>
-            <div>
-              <div class="eb-title">Physical Actuation</div>
-              <p class="eb-desc">Any action that controls or influences physical systems: motors, vehicles, robots, machinery, smart-home devices, industrial equipment, access gates, drones, or other actuators — whether directly or through intermediary controllers.</p>
-            </div>
-          </div>
-          <div class="eb-category">
-            <div class="eb-num">6</div>
-            <div>
-              <div class="eb-title">Cross-Boundary Read (Conditional)</div>
-              <p class="eb-desc">Pure read operations are generally out of scope unless they cross a tenant boundary, a privilege boundary, or expose regulated/controlled data, in which case the read itself constitutes an Effect Boundary event.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="note">An Effect Boundary is crossed even when the AI system does not directly execute the operation, but causes it through an intermediary. This is the structural guarantee that prevents advisory-framing loopholes.</div>
-
-      <h3>Effect Boundary Sub-Classifications</h3>
-      <p>To support proportionate governance requirements, CAES defines two sub-classifications of Effect Boundary:</p>
-
-      <div class="eb-sub-terms">
-        <div class="eb-sub-terms-label">Recommended Sub-Terms</div>
-        <div class="eb-sub-term">
-          <strong>Effect Boundary — Hard:</strong> <em>Digital state mutation + physical actuation + external system interaction. Categories 1, 2, and 5. Direct, measurable, typically irreversible effects on systems or the physical world.</em>
-        </div>
-        <div class="eb-sub-term">
-          <strong>Effect Boundary — Soft:</strong> <em>Communication effect + behavioral influence. Categories 3 and 4. Effects mediated through human interpretation, but consequential in regulated or safety-critical contexts.</em>
-        </div>
-      </div>
-
-      <p>Compliance tiers <strong>may</strong> reference these sub-classifications to establish proportionate requirements. For example, an implementation governing a customer support chatbot (Soft effects) may have different evidence requirements than one governing autonomous trading execution (Hard effects). Both remain within CAES scope.</p>
-
-      <div class="note">CAES explicitly treats speech, human influence, robotics, and vehicles as first-class effect domains. Category 6 (Cross-Boundary Read) applies conditionally based on boundary and data classification.</div>
-    </section>
-
-    <!-- 5. NORMATIVE REQUIREMENTS -->
+    <!-- 4. NORMATIVE REQUIREMENTS -->
     <section class="spec-section" id="normative">
-      <div class="section-num">Section 05</div>
+      <div class="section-num">Section 04</div>
       <h2>Normative Requirements</h2>
       <p>The following requirements are normative. A system claiming CAES conformance must satisfy all requirements at the applicable compliance level.</p>
 
-      <h3>5.1 — Authorization Requirements</h3>
+      <h3>4.1 — Authorization Requirements</h3>
       <div class="normative-block">
         <div class="normative-header">CAES-AUTH</div>
         <div class="normative-body">
           <div class="req-row">
             <div class="req-id">AUTH-01</div>
-            <div class="req-text">Every action crossing an Effect Boundary (as defined in Section 4) <span class="must">MUST</span> be preceded by a policy evaluation.</div>
+            <div class="req-text">Every action crossing an Effect Boundary <span class="must">must</span> be preceded by a policy evaluation.</div>
           </div>
           <div class="req-row">
             <div class="req-id">AUTH-02</div>
-            <div class="req-text">Policy evaluation <span class="must">MUST</span> produce a Decision Receipt before execution proceeds.</div>
+            <div class="req-text">Policy evaluation <span class="must">must</span> produce a Decision Receipt before execution proceeds.</div>
           </div>
           <div class="req-row">
             <div class="req-id">AUTH-03</div>
-            <div class="req-text">The Decision Receipt <span class="must">MUST</span> contain a deterministic PolicyHash bound to the policy state at evaluation time.</div>
-          </div>
-          <div class="req-row">
-            <div class="req-id">AUTH-03a</div>
-            <div class="req-text">PolicyHash <span class="must">MUST</span> be computed from a canonical policy representation such that semantically identical policies yield identical hashes. Field ordering, whitespace, and encoding <span class="must">must not</span> affect the resulting hash value.</div>
+            <div class="req-text">The Decision Receipt <span class="must">must</span> contain a deterministic PolicyHash bound to the policy state at evaluation time.</div>
           </div>
           <div class="req-row">
             <div class="req-id">AUTH-04</div>
-            <div class="req-text">Execution <span class="must">MUST</span> fail closed if a verified Decision Receipt cannot be produced.</div>
+            <div class="req-text">Execution <span class="must">must</span> fail closed if a verified Decision Receipt cannot be produced.</div>
           </div>
           <div class="req-row">
             <div class="req-id">AUTH-05</div>
-            <div class="req-text">There <span class="must">MUST</span> be no implicit authorization path. Absence of receipt equals absence of authority.</div>
+            <div class="req-text">There <span class="must">must</span> be no implicit authorization path. Absence of receipt equals absence of authority.</div>
           </div>
         </div>
       </div>
 
-      <h3>5.2 — Evidence Requirements</h3>
+      <h3>4.2 — Evidence Requirements</h3>
       <div class="normative-block">
         <div class="normative-header">CAES-EVID</div>
         <div class="normative-body">
           <div class="req-row">
             <div class="req-id">EVID-01</div>
-            <div class="req-text">Decision Receipts <span class="must">MUST</span> be cryptographically signed and independently verifiable.</div>
-          </div>
-          <div class="req-row">
-            <div class="req-id">EVID-01a</div>
-            <div class="req-text">Decision Receipts <span class="must">MUST</span> be verifiable using a public key or equivalent trust bundle independent of the runtime that produced the receipt. Offline verification <span class="must">MUST</span> be possible without access to the production system.</div>
+            <div class="req-text">Decision Receipts <span class="must">must</span> be cryptographically signed and independently verifiable.</div>
           </div>
           <div class="req-row">
             <div class="req-id">EVID-02</div>
-            <div class="req-text">Denial decisions <span class="must">MUST</span> produce a Denial Receipt equivalent in structural integrity to an approval receipt.</div>
+            <div class="req-text">Denial decisions <span class="must">must</span> produce a Denial Receipt equivalent in structural integrity to an approval receipt.</div>
           </div>
           <div class="req-row">
             <div class="req-id">EVID-03</div>
-            <div class="req-text">The governed spine <span class="must">MUST</span> be append-only. Canonical records <span class="must-not">MUST NOT</span> be mutated, overwritten, or soft-deleted.</div>
-          </div>
-          <div class="req-row">
-            <div class="req-id">EVID-03a</div>
-            <div class="req-text">Every spine event <span class="must">MUST</span> carry causal parent reference(s) sufficient to reconstruct a deterministic partial order. Tenant scope <span class="must">MUST</span> be declared on every spine event.</div>
+            <div class="req-text">The governed spine <span class="must">must</span> be append-only. Canonical records must not be mutated, overwritten, or soft-deleted.</div>
           </div>
           <div class="req-row">
             <div class="req-id">EVID-04</div>
-            <div class="req-text">A terminal outcome record <span class="must">MUST</span> exist for every executed action. Progress telemetry does not satisfy this requirement.</div>
+            <div class="req-text">A terminal outcome record <span class="must">must</span> exist for every executed action. Progress telemetry does not satisfy this requirement.</div>
           </div>
           <div class="req-row">
             <div class="req-id">EVID-05</div>
-            <div class="req-text">Evidence artifacts <span class="must">MUST</span> be verifiable without access to the live production system.</div>
+            <div class="req-text">Evidence artifacts <span class="must">must</span> be verifiable without access to the live production system.</div>
           </div>
         </div>
       </div>
 
-      <h3>5.3 — Failure Requirements</h3>
+      <h3>4.3 — Failure Requirements</h3>
       <div class="normative-block">
         <div class="normative-header">CAES-FAIL</div>
         <div class="normative-body">
           <div class="req-row">
             <div class="req-id">FAIL-01</div>
-            <div class="req-text">System failure during authorization <span class="must">MUST</span> resolve to execution denial, never silent continuation.</div>
+            <div class="req-text">System failure during authorization <span class="must">must</span> resolve to execution denial, never silent continuation.</div>
           </div>
           <div class="req-row">
             <div class="req-id">FAIL-02</div>
-            <div class="req-text">Failure events <span class="must">MUST</span> be recorded. Silent degradation is a conformance violation.</div>
+            <div class="req-text">Failure events <span class="must">must</span> be recorded. Silent degradation is a conformance violation.</div>
           </div>
           <div class="req-row">
             <div class="req-id">FAIL-03</div>
-            <div class="req-text">Partial execution state <span class="must-not">MUST NOT</span> persist when spine append fails prior to action execution.</div>
+            <div class="req-text">Partial execution state <span class="must not">must not</span> persist when spine append fails prior to action execution.</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 6. CORE PRIMITIVES -->
+    <!-- 5. CORE PRIMITIVES -->
     <section class="spec-section" id="primitives">
-      <div class="section-num">Section 06</div>
+      <div class="section-num">Section 05</div>
       <h2>Core Primitives</h2>
       <p>CAES defines three structural primitives. These are the minimum objects a conformant system must be able to produce, persist, and present to an auditor.</p>
 
       <h3>Primitive 1 — The Decision Receipt</h3>
-      <p>The Decision Receipt is the atomic unit of governed authorization. It is produced at evaluation time — not after execution — and binds the following: the identity of the requesting actor, the canonical policy state (via PolicyHash), the disposition (Approve / Deny / RequiresHuman), the timestamp of evaluation, and a cryptographic signature verifiable via a public key or trust bundle independent of the runtime.</p>
+      <p>The Decision Receipt is the atomic unit of governed authorization. It is produced at evaluation time — not after execution — and binds the following: the identity of the requesting actor, the canonical policy state (via PolicyHash), the disposition (Approve / Deny / RequiresHuman), the timestamp of evaluation, and a cryptographic signature.</p>
       <div class="note">A Decision Receipt is not a log entry. It is an authorization artifact. The distinction is structural: logs record what happened. A Decision Receipt proves that authorization was evaluated before it happened.</div>
 
       <h3>Primitive 2 — The PolicyHash</h3>
-      <p>The PolicyHash is a deterministic, reproducible hash of the canonical policy state active at the moment of evaluation. It must be computed from a canonical representation such that semantically identical policies — regardless of field ordering, whitespace, or encoding — yield identical hashes. Any party with access to the policy definition can independently recompute the hash. A PolicyHash mismatch is proof of policy drift or manipulation.</p>
+      <p>The PolicyHash is a deterministic, reproducible hash of the canonical policy state active at the moment of evaluation. Any party with access to the policy definition can independently recompute the hash. A PolicyHash mismatch is proof of policy drift or manipulation.</p>
 
       <h3>Primitive 3 — The Governed Spine</h3>
-      <p>The Governed Spine is the append-only, causally ordered, tenant-scoped record of all governed events. It is not a log. It is the forensic source of truth. Every event in the spine carries: a unique immutable identifier, a causal parent reference sufficient to reconstruct a deterministic partial order, a tenant scope declaration, a hash commitment over the payload, and a timestamp assigned at ingestion.</p>
+      <p>The Governed Spine is the append-only, causally ordered record of all governed events. It is not a log. It is the forensic source of truth. Every event in the spine carries: a unique immutable identifier, a causal parent reference, a tenant scope, a hash commitment over the payload, and a timestamp assigned at ingestion.</p>
     </section>
 
-    <!-- 7. CAUSAL CHAIN -->
+    <!-- 6. CAUSAL CHAIN -->
     <section class="spec-section" id="causal-chain">
-      <div class="section-num">Section 07</div>
+      <div class="section-num">Section 06</div>
       <h2>Causal Chain</h2>
       <p>Every governed operation produces a spine — a causally ordered sequence of governed events. The spine is the complete forensic record of a single operational run.</p>
       <p>The canonical CAES causal chain is:</p>
@@ -371,11 +804,11 @@
         <div class="normative-body">
           <div class="req-row">
             <div class="req-id">CI-01</div>
-            <div class="req-text">Exactly one <code>Trigger</code> per spine. A Trigger is the originating event that created the execution scope. Retries <span class="must">MUST</span> reference the original Trigger identity rather than creating a new spine. Scheduled invocations and multi-source fan-in events each constitute a distinct Trigger.</div>
+            <div class="req-text">Exactly one <code>Trigger</code> per spine.</div>
           </div>
           <div class="req-row">
             <div class="req-id">CI-02</div>
-            <div class="req-text">Exactly one terminal <code>Outcome</code> per <code>Action</code>. Progress telemetry <span class="must-not">MUST NOT</span> satisfy the terminal outcome requirement.</div>
+            <div class="req-text">Exactly one terminal <code>Outcome</code> per <code>Action</code>.</div>
           </div>
           <div class="req-row">
             <div class="req-id">CI-03</div>
@@ -385,17 +818,13 @@
             <div class="req-id">CI-04</div>
             <div class="req-text">No spine object is mutable after promotion to the authoritative ledger.</div>
           </div>
-          <div class="req-row">
-            <div class="req-id">CI-05</div>
-            <div class="req-text">Every spine event <span class="must">MUST</span> carry causal parent reference(s) sufficient to reconstruct the complete deterministic partial order of the operation.</div>
-          </div>
         </div>
       </div>
     </section>
 
-    <!-- 8. AUTHORITY MODEL -->
+    <!-- 7. AUTHORITY MODEL -->
     <section class="spec-section" id="authority">
-      <div class="section-num">Section 08</div>
+      <div class="section-num">Section 07</div>
       <h2>Authority Model</h2>
       <p>CAES does not prescribe how policy is authored. It defines how authority is <em>exercised</em> and <em>proven</em>.</p>
       <p>When high-stakes actions require human review, a CAES-conformant system must not merely pause and resume. It must produce a cryptographic signing request. The human operator must produce a signed delegation — narrow in scope, bound to the specific action, and recorded in the governed spine.</p>
@@ -404,9 +833,9 @@
       <div class="note">The CAES authority model treats humans as governed actors — not system overrides. Dissent, escalation, and override are first-class events in the governed spine, not exceptions to it.</div>
     </section>
 
-    <!-- 9. COMPLIANCE -->
+    <!-- 8. COMPLIANCE -->
     <section class="spec-section" id="compliance">
-      <div class="section-num">Section 09</div>
+      <div class="section-num">Section 08</div>
       <h2>Compliance Criteria</h2>
       <p>CAES conformance is defined in three levels. Higher levels are supersets of lower levels.</p>
 
@@ -427,8 +856,8 @@
           <div class="tier-name">Verifiable Evidence Chain</div>
         </div>
         <div class="tier-reqs">
-          Satisfies: Level 1 + <span>AUTH-03</span><span>AUTH-03a</span><span>EVID-01</span><span>EVID-01a</span><span>EVID-03</span><span>EVID-03a</span><span>EVID-04</span><span>EVID-05</span><span>FAIL-03</span><br>
-          Full cryptographic evidence chain. PolicyHash binding with canonical representation. Offline-verifiable evidence artifacts with independent trust roots.
+          Satisfies: Level 1 + <span>AUTH-03</span><span>EVID-01</span><span>EVID-03</span><span>EVID-04</span><span>EVID-05</span><span>FAIL-03</span><br>
+          Full cryptographic evidence chain. PolicyHash binding. Offline-verifiable evidence artifacts.
         </div>
       </div>
 
@@ -438,7 +867,7 @@
           <div class="tier-name">Full Constitutional Conformance</div>
         </div>
         <div class="tier-reqs">
-          Satisfies: Level 2 + Human Authority Model + Causal Chain Invariants (CI-01 through CI-05) + Full Spine Spec + Effect Boundary classification<br>
+          Satisfies: Level 2 + Human Authority Model + Causal Chain Invariants + Full Spine Spec<br>
           Complete CAES implementation. Suitable for regulated industries, legal discovery, audit submission.
         </div>
       </div>
@@ -446,130 +875,26 @@
       <div class="note">CAES does not provide third-party certification at this time. Independent validation against this specification is the responsibility of the implementing organization. The CAES Working Group intends to publish a formal test suite in a future revision.</div>
     </section>
 
-    <!-- 10. CONFORMANCE CLAIMS (NEW) -->
-    <section class="spec-section" id="conformance-claims">
-      <div class="section-num">Section 10</div>
-      <h2>Conformance Claims</h2>
-      <p>Any implementation claiming CAES compliance <strong>must</strong> publish the following information. This requirement exists to make conformance claims auditable and to prevent dilution of the standard through unverifiable assertions.</p>
-
-      <div class="claim-block">
-        <div class="claim-label">Required Conformance Statement</div>
-        <div class="claim-field">
-          <div class="claim-field-name">CAES Version</div>
-          <div class="claim-field-desc">The specification version against which conformance is claimed (e.g., v0.1.1).</div>
-        </div>
-        <div class="claim-field">
-          <div class="claim-field-name">Claimed Level</div>
-          <div class="claim-field-desc">Conformance level: 1 (Receipt-Bounded), 2 (Verifiable Evidence), or 3 (Full Constitutional).</div>
-        </div>
-        <div class="claim-field">
-          <div class="claim-field-name">Receipt Verification Method</div>
-          <div class="claim-field-desc">How Decision Receipts are verified offline. Must identify the trust root or public key mechanism.</div>
-        </div>
-        <div class="claim-field">
-          <div class="claim-field-name">PolicyHash Canonicalization</div>
-          <div class="claim-field-desc">The canonical representation method used for PolicyHash computation (e.g., JCS, sorted-key JSON, custom canonical form).</div>
-        </div>
-        <div class="claim-field">
-          <div class="claim-field-name">Fail-Closed Enforcement</div>
-          <div class="claim-field-desc">How fail-closed behavior is enforced. Must describe the mechanism, not merely assert the property.</div>
-        </div>
-        <div class="claim-field">
-          <div class="claim-field-name">Effect Boundary Scope</div>
-          <div class="claim-field-desc">Which Effect Boundary categories (1–6) the implementation governs, and whether Hard, Soft, or both classifications apply.</div>
-        </div>
-      </div>
-
-      <div class="note">Implementations MUST NOT represent themselves as CAES-compliant unless a complete Conformance Statement is published. Conformance statements MUST cite a specific CAES version. Unversioned conformance claims are non-conformant.</div>
-    </section>
-
-    <!-- 11. NON-COMPLIANT PATTERNS (NEW) -->
-    <section class="spec-section" id="non-compliant">
-      <div class="section-num">Section 11</div>
-      <h2>Non-Compliant Patterns</h2>
-      <p>The following patterns are explicitly non-compliant with CAES at any level. This section exists to prevent dilution of the standard through architectural workarounds that satisfy the letter of individual requirements while violating their intent.</p>
-
-      <div class="antipattern-block">
-        <div class="antipattern-header">Non-Compliant — Authorization</div>
-        <div class="antipattern-body">
-          <div class="ap-row">
-            <div class="ap-id">NCP-01</div>
-            <div class="ap-text"><span class="violation">Prompt-level governance without execution-level enforcement.</span> Instructing an LLM via system prompt to "follow policy" does not constitute policy evaluation. CAES requires a deterministic, mechanically enforced policy evaluation producing a Decision Receipt — not a probabilistic compliance suggestion.</div>
-          </div>
-          <div class="ap-row">
-            <div class="ap-id">NCP-02</div>
-            <div class="ap-text"><span class="violation">Post-hoc logging as authorization evidence.</span> Recording that an action occurred after execution does not prove authorization was evaluated before execution. CAES requires the Decision Receipt to exist prior to the execution event.</div>
-          </div>
-          <div class="ap-row">
-            <div class="ap-id">NCP-03</div>
-            <div class="ap-text"><span class="violation">LLM-as-judge without deterministic fallback.</span> Using a language model as the sole policy evaluator — where the evaluation is non-deterministic and non-reproducible — does not satisfy AUTH-03 or AUTH-03a. PolicyHash must be deterministic. A different output on identical inputs is a conformance failure.</div>
-          </div>
-          <div class="ap-row">
-            <div class="ap-id">NCP-04</div>
-            <div class="ap-text"><span class="violation">Hash-only signing claimed as cryptographic verification.</span> Computing a hash of a receipt without signing it with an asymmetric key does not satisfy EVID-01 or EVID-01a. Hashing proves integrity. Signing proves authority and enables offline verification via an independent trust root.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="antipattern-block">
-        <div class="antipattern-header">Non-Compliant — Evidence</div>
-        <div class="antipattern-body">
-          <div class="ap-row">
-            <div class="ap-id">NCP-05</div>
-            <div class="ap-text"><span class="violation">Mutable logs presented as governed spine.</span> Any record store that permits overwrite, soft-delete, or last-write-wins semantics is not a governed spine and does not satisfy EVID-03. Append-only is enforced, not declared.</div>
-          </div>
-          <div class="ap-row">
-            <div class="ap-id">NCP-06</div>
-            <div class="ap-text"><span class="violation">Evidence artifacts that require live system access to verify.</span> If an auditor must connect to a running production instance to validate a receipt or evidence pack, EVID-05 and EVID-01a are not satisfied. Verification must be offline-capable.</div>
-          </div>
-          <div class="ap-row">
-            <div class="ap-id">NCP-07</div>
-            <div class="ap-text"><span class="violation">Progress telemetry treated as terminal outcome.</span> Status updates, heartbeats, and intermediate state reports do not satisfy CI-02 or EVID-04. Every executed action must produce exactly one terminal outcome record.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="antipattern-block">
-        <div class="antipattern-header">Non-Compliant — Scope &amp; Boundary</div>
-        <div class="antipattern-body">
-          <div class="ap-row">
-            <div class="ap-id">NCP-08</div>
-            <div class="ap-text"><span class="violation">Advisory framing for systems that produce consequential effects.</span> Claiming a system is "advisory only" while it auto-sends emails, issues voice commands, drives actuators, or publishes decisions that humans act upon without independent verification does not remove the system from CAES scope. See Effect Boundary Section 4, Categories 3, 4, and 5.</div>
-          </div>
-          <div class="ap-row">
-            <div class="ap-id">NCP-09</div>
-            <div class="ap-text"><span class="violation">Silent degradation under failure.</span> Any system that continues execution when authorization verification fails — whether by configuration, fallback path, or exception handling — violates FAIL-01 and FAIL-02. Failure must resolve to denial with a recorded event.</div>
-          </div>
-          <div class="ap-row">
-            <div class="ap-id">NCP-10</div>
-            <div class="ap-text"><span class="violation">Governance bypass via invocation surface.</span> Changing how a system is called — in-process, via API, via MCP, via agent-to-agent protocol — does not exempt the execution from governance requirements. CAES applies at the execution layer, not the invocation layer.</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="note">This section is intentionally explicit. Its purpose is to prevent the "letter of the law" compliance that undermines standards adoption. Patterns listed here are structural violations — not edge cases. Implementations exhibiting any of these patterns may not claim CAES conformance at any level.</div>
-    </section>
-
-    <!-- 12. REFERENCE IMPLEMENTATION -->
+    <!-- 9. REFERENCE IMPLEMENTATION -->
     <section class="spec-section" id="reference">
-      <div class="section-num">Section 12</div>
+      <div class="section-num">Section 09</div>
       <h2>Reference Implementation</h2>
       <p>The CAES Working Group designates a single reference implementation per specification version. The reference implementation demonstrates normative conformance and serves as the baseline for interpretive questions about specification intent.</p>
       <p>Designation as the reference implementation does not imply commercial endorsement by the CAES Working Group. Other implementations claiming CAES conformance must independently satisfy the requirements defined in this specification.</p>
 
       <div class="ref-impl-block">
         <div>
-          <div class="ref-impl-label">CAES v0.1.1 Reference Implementation</div>
+          <div class="ref-impl-label">CAES v0.1 Reference Implementation</div>
           <div class="ref-impl-name">Keon Systems — Governed Execution</div>
-          <p class="ref-impl-desc">Declared conformance: CAES Level 3 (v0.1.1) · Evidence export available for offline audit verification.</p>
+          <p class="ref-impl-desc">Implements CAES Level 3 conformance · ALPHA authority protocol · Evidence Pack export · Governed Memory Spine</p>
         </div>
-        <a href="https://keon.systems" class="ref-impl-link">View Implementation →</a>
+        <a href="https://keonsystems.com" class="ref-impl-link">View Implementation →</a>
       </div>
     </section>
 
-    <!-- 13. VERSION HISTORY -->
+    <!-- 10. VERSION HISTORY -->
     <section class="spec-section" id="versions">
-      <div class="section-num">Section 13</div>
+      <div class="section-num">Section 10</div>
       <h2>Version History</h2>
       <table class="version-table">
         <thead>
@@ -582,12 +907,6 @@
         </thead>
         <tbody>
           <tr class="current">
-            <td class="ver">v0.1.1</td>
-            <td>Draft</td>
-            <td>March 2026</td>
-            <td>Effect Boundary definition (6 categories + Hard/Soft sub-terms). AUTH-03a (PolicyHash canonicalization). EVID-01a (offline verification trust root). EVID-03a (causal parent + tenant scope). CI-01 Trigger clarification. CI-05 (causal reconstruction). Conformance Claims section. Non-Compliant Patterns section.</td>
-          </tr>
-          <tr>
             <td class="ver">v0.1</td>
             <td>Draft</td>
             <td>March 2026</td>
@@ -598,9 +917,9 @@
       <div class="note">CAES is a living specification. Revisions are versioned and publicly documented. The specification does not change without a version increment. Backward-incompatible changes increment the major version.</div>
     </section>
 
-    <!-- 14. CHARTER -->
+    <!-- 11. CHARTER -->
     <section class="spec-section" id="charter">
-      <div class="section-num">Section 14</div>
+      <div class="section-num">Section 11</div>
       <h2>Working Group Charter</h2>
 
       <div class="charter-block">
@@ -619,9 +938,9 @@
       <div class="note">The Working Group operates on a principle of minimal governance. The specification must remain foundational, normative, and unbloated. CAES defines primitives. Implementations build on them.</div>
     </section>
 
-    <!-- 15. AMENDMENT PROCESS -->
+    <!-- 12. AMENDMENT PROCESS -->
     <section class="spec-section" id="process">
-      <div class="section-num">Section 15</div>
+      <div class="section-num">Section 12</div>
       <h2>Amendment Process</h2>
       <p>CAES does not change silently. Every normative change is versioned. Every version is publicly documented with a summary of what changed and why. The amendment process exists to make the specification more correct — not more comprehensive. Scope creep is not an amendment.</p>
       <p>To propose an amendment: document the requirement, the problem it solves, and the conformance implications. Submit to the Working Group. Amendment proposals are acknowledged, considered, and either incorporated into the next versioned draft or formally declined with rationale.</p>
@@ -632,14 +951,14 @@
 
 <!-- FOOTER -->
 <footer>
-  <div>© CAES Working Group · Constitutional AI Execution Standard · <strong>v0.1.1 Draft</strong> · March 2026</div>
+  <div>CAES Working Group · Constitutional AI Execution Standard · <strong>v0.1 Draft</strong> · March 2026</div>
   <div>
     <a href="#">Specification</a> &nbsp;·&nbsp;
     <a href="#">Change Log</a> &nbsp;·&nbsp;
     <a href="#">Reference Implementation</a> &nbsp;·&nbsp;
     <a href="#">Contact Working Group</a>
   </div>
-  <div>This draft is published for public review and comment. CAES is a mark of the CAES Working Group. Conformance claims must cite version.</div>
+  <div>This specification is published for public review. All rights reserved pending formal adoption.</div>
 </footer>
 
 <script>

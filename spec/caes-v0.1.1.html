@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAES — Constitutional AI Execution Standard · v0.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --paper: #f7f6f2;
+    --paper-warm: #f0ede6;
+    --ink: #1a1a1a;
+    --ink-mid: #4a4a4a;
+    --ink-light: #8a8a8a;
+    --ink-ghost: #c0bdb8;
+    --rule: #d8d4cc;
+    --teal: #1a6b5e;
+    --teal-light: #2a9b88;
+    --teal-pale: rgba(26, 107, 94, 0.06);
+    --red: #8b2020;
+    --mono: 'DM Mono', monospace;
+    --serif: 'Libre Baskerville', serif;
+    --display: 'Syne', sans-serif;
+    --col-width: 680px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  /* ─── HEADER BAR ─── */
+  .site-header {
+    border-bottom: 2px solid var(--ink);
+    padding: 0;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .header-org {
+    padding: 12px 32px;
+    border-right: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-mid);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-org-dot {
+    width: 6px; height: 6px;
+    background: var(--teal);
+    border-radius: 50%;
+  }
+
+  .header-nav {
+    display: flex;
+    align-items: stretch;
+    margin-left: auto;
+  }
+  .header-nav a {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mid);
+    text-decoration: none;
+    padding: 12px 20px;
+    border-left: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    transition: background 0.15s, color 0.15s;
+  }
+  .header-nav a:hover { background: var(--paper-warm); color: var(--ink); }
+  .header-nav a.active { color: var(--teal); background: var(--teal-pale); }
+
+  /* RFC-style document header */
+  .doc-header {
+    padding: 48px 32px 40px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: start;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .doc-title-block {}
+
+  .doc-std-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 12px;
+  }
+
+  .doc-title {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 36px;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .doc-subtitle {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 20px;
+    color: var(--ink-mid);
+    margin-bottom: 20px;
+  }
+
+  .doc-formal {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    line-height: 1.8;
+  }
+
+  .doc-meta-block {
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .version-badge {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    padding: 6px 14px;
+    margin-bottom: 16px;
+  }
+
+  .doc-meta-table {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-light);
+    text-align: right;
+    line-height: 2;
+  }
+  .doc-meta-table .label { color: var(--ink-ghost); margin-right: 8px; }
+  .doc-meta-table .val { color: var(--ink-mid); }
+
+  /* ─── LAYOUT ─── */
+  .page-body {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    max-width: 1100px;
+    margin: 0 auto;
+    border-top: 1px solid var(--rule);
+    min-height: 100vh;
+  }
+
+  /* ─── SIDEBAR TOC ─── */
+  .sidebar {
+    border-right: 1px solid var(--rule);
+    padding: 40px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .toc-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-ghost);
+    padding: 0 28px 16px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 16px;
+  }
+
+  .toc-section {
+    margin-bottom: 4px;
+  }
+
+  .toc-section-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-ghost);
+    padding: 12px 28px 4px;
+  }
+
+  .toc-link {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mid);
+    text-decoration: none;
+    padding: 5px 28px;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    line-height: 1.4;
+  }
+  .toc-link:hover { color: var(--ink); border-left-color: var(--ink-ghost); }
+  .toc-link.active { color: var(--teal); border-left-color: var(--teal); background: var(--teal-pale); }
+
+  /* ─── MAIN CONTENT ─── */
+  main {
+    padding: 48px 64px 96px;
+    max-width: 760px;
+  }
+
+  /* RFC-style section headers */
+  .spec-section {
+    margin-bottom: 56px;
+    padding-bottom: 56px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .spec-section:last-child { border-bottom: none; }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--ink-ghost);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 20px;
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin: 28px 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  p {
+    margin-bottom: 16px;
+    color: var(--ink-mid);
+  }
+  p strong { color: var(--ink); font-weight: 700; }
+
+  /* Abstract callout */
+  .abstract-block {
+    background: var(--paper-warm);
+    border-left: 3px solid var(--ink);
+    padding: 20px 24px;
+    margin: 24px 0;
+    font-style: italic;
+    color: var(--ink-mid);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* NORMATIVE requirements */
+  .normative-block {
+    border: 1px solid var(--rule);
+    background: var(--paper-warm);
+    margin: 24px 0;
+  }
+
+  .normative-header {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--ink);
+    padding: 6px 16px;
+    display: inline-block;
+  }
+
+  .normative-body {
+    padding: 16px 20px;
+  }
+
+  .req-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: start;
+  }
+  .req-row:last-child { border-bottom: none; }
+
+  .req-id {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-ghost);
+    padding-top: 2px;
+  }
+
+  .req-text {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  .req-text .must {
+    color: var(--red);
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  /* Version table */
+  .version-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 11px;
+    margin: 20px 0;
+  }
+  .version-table th {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 2px solid var(--ink);
+    color: var(--ink);
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 9px;
+  }
+  .version-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--rule);
+    color: var(--ink-mid);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .version-table tr:hover td { background: var(--paper-warm); }
+  .version-table .ver { color: var(--teal); font-weight: 500; }
+  .version-table .current td { background: var(--teal-pale); }
+
+  /* Compliance tiers */
+  .tier-block {
+    border: 1px solid var(--rule);
+    margin: 16px 0;
+    overflow: hidden;
+  }
+
+  .tier-header {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    align-items: center;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .tier-level {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--ink);
+    padding: 10px 16px;
+    text-align: center;
+  }
+  .tier-level.l1 { background: var(--teal); }
+  .tier-level.l2 { background: var(--teal-light); }
+  .tier-level.l3 { background: var(--ink); }
+
+  .tier-name {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 10px 16px;
+    color: var(--ink);
+  }
+
+  .tier-reqs {
+    padding: 12px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mid);
+    line-height: 2;
+  }
+  .tier-reqs span {
+    display: inline-block;
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 1px 8px;
+    margin: 2px 4px 2px 0;
+    font-size: 10px;
+    color: var(--ink);
+  }
+
+  /* Charter block */
+  .charter-block {
+    border: 2px solid var(--ink);
+    padding: 28px 32px;
+    margin: 24px 0;
+    position: relative;
+  }
+  .charter-block::before {
+    content: 'CHARTER';
+    position: absolute;
+    top: -10px; left: 20px;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--paper);
+    background: var(--ink);
+    padding: 2px 10px;
+  }
+  .charter-block p {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--ink);
+    font-style: italic;
+    margin: 0;
+  }
+
+  /* Reference impl block */
+  .ref-impl-block {
+    border: 1px solid var(--teal);
+    background: var(--teal-pale);
+    padding: 24px 28px;
+    margin: 24px 0;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+  }
+  .ref-impl-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin-bottom: 6px;
+  }
+  .ref-impl-name {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .ref-impl-desc {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mid);
+    margin: 0;
+  }
+  .ref-impl-link {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal);
+    text-decoration: none;
+    border: 1px solid var(--teal);
+    padding: 10px 18px;
+    white-space: nowrap;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .ref-impl-link:hover { background: var(--teal); color: var(--paper); }
+
+  /* Working group members */
+  .wg-block {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mid);
+    line-height: 2;
+    border: 1px solid var(--rule);
+    padding: 20px 24px;
+    margin: 20px 0;
+  }
+  .wg-block .wg-role {
+    color: var(--ink-ghost);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: inline-block;
+    min-width: 140px;
+  }
+
+  /* Inline code */
+  code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--paper-warm);
+    border: 1px solid var(--rule);
+    padding: 1px 6px;
+    color: var(--ink);
+  }
+
+  /* Note blocks */
+  .note {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-light);
+    border-left: 2px solid var(--rule);
+    padding: 8px 16px;
+    margin: 16px 0;
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 2px solid var(--ink);
+    padding: 24px 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-ghost);
+    background: var(--paper-warm);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  footer a { color: var(--teal); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="header-top">
+    <div class="header-org">
+      <span class="header-org-dot"></span>
+      CAES Working Group
+    </div>
+    <nav class="header-nav">
+      <a href="#overview" class="active">Overview</a>
+      <a href="#versions">Version History</a>
+      <a href="#normative">Requirements</a>
+      <a href="#compliance">Compliance</a>
+      <a href="#reference">Reference Impl</a>
+      <a href="#charter">Charter</a>
+    </nav>
+  </div>
+
+  <div class="doc-header">
+    <div class="doc-title-block">
+      <div class="doc-std-label">Constitutional AI Execution Standard</div>
+      <div class="doc-title">CAES</div>
+      <div class="doc-subtitle">A formal specification for policy-bound AI execution</div>
+      <div class="doc-formal">
+        Category: Normative Specification &nbsp;·&nbsp; Status: Draft &nbsp;·&nbsp; Working Group: CAES-WG
+      </div>
+    </div>
+    <div class="doc-meta-block">
+      <div class="version-badge">v0.1 DRAFT</div>
+      <div class="doc-meta-table">
+        <div><span class="label">Published</span><span class="val">March 2026</span></div>
+        <div><span class="label">Authors</span><span class="val">CAES-WG</span></div>
+        <div><span class="label">Supersedes</span><span class="val">—</span></div>
+        <div><span class="label">Next Review</span><span class="val">Q3 2026</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- PAGE BODY -->
+<div class="page-body">
+
+  <!-- SIDEBAR TOC -->
+  <aside class="sidebar">
+    <div class="toc-label">Contents</div>
+
+    <div class="toc-section">
+      <div class="toc-section-label">Preamble</div>
+      <a href="#overview" class="toc-link active">1. Overview</a>
+      <a href="#scope" class="toc-link">2. Scope</a>
+      <a href="#definitions" class="toc-link">3. Definitions</a>
+    </div>
+
+    <div class="toc-section">
+      <div class="toc-section-label">Specification</div>
+      <a href="#normative" class="toc-link">4. Normative Requirements</a>
+      <a href="#primitives" class="toc-link">5. Core Primitives</a>
+      <a href="#causal-chain" class="toc-link">6. Causal Chain</a>
+      <a href="#authority" class="toc-link">7. Authority Model</a>
+    </div>
+
+    <div class="toc-section">
+      <div class="toc-section-label">Adoption</div>
+      <a href="#compliance" class="toc-link">8. Compliance Criteria</a>
+      <a href="#reference" class="toc-link">9. Reference Implementation</a>
+      <a href="#versions" class="toc-link">10. Version History</a>
+    </div>
+
+    <div class="toc-section">
+      <div class="toc-section-label">Governance</div>
+      <a href="#charter" class="toc-link">11. Working Group Charter</a>
+      <a href="#process" class="toc-link">12. Amendment Process</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- 1. OVERVIEW -->
+    <section class="spec-section" id="overview">
+      <div class="section-num">Section 01</div>
+      <h2>Overview</h2>
+      <div class="abstract-block">
+        CAES defines the minimum structural requirements for AI systems executing actions that carry legal, financial, regulatory, or operational consequence. A CAES-conformant system does not merely log what happened — it proves, before execution occurs, that the action was authorized.
+      </div>
+      <p>Artificial intelligence systems have crossed from advisory to operational capability. They now commit transactions, modify infrastructure, and make decisions at a scale and velocity that exceeds human review. This shift introduces a structural accountability gap: the absence of a formal standard for what it means to <strong>authorize</strong> an AI-initiated action and <strong>prove</strong> that authorization occurred.</p>
+      <p>CAES addresses this gap. It does not prescribe implementation architecture. It defines the normative properties that any conformant system <strong>must</strong> provide — regardless of the underlying technology, deployment model, or AI provider.</p>
+      <div class="note">
+        This specification is normative. The keyword MUST indicates an absolute requirement. SHOULD indicates a recommendation. MAY indicates an option. Usage follows RFC 2119.
+      </div>
+    </section>
+
+    <!-- 2. SCOPE -->
+    <section class="spec-section" id="scope">
+      <div class="section-num">Section 02</div>
+      <h2>Scope</h2>
+      <p>This specification applies to any AI system — agent, model, or automated pipeline — that:</p>
+      <p>
+        (a) Produces effects beyond the boundary of its own process state;<br>
+        (b) Operates in an environment subject to regulatory, legal, or financial accountability;<br>
+        (c) Executes actions that a human or policy authority must be able to verify after the fact.
+      </p>
+      <p>CAES does not apply to purely advisory systems — those whose output requires explicit human mediation before real-world effect occurs. The boundary is the execution gate: if the AI can cause effects without a human completing a separate action, CAES scope applies.</p>
+      <div class="note">Pure read operations without side effects are out of scope unless they cross a tenant or authorization boundary that itself constitutes a governed event.</div>
+    </section>
+
+    <!-- 3. DEFINITIONS -->
+    <section class="spec-section" id="definitions">
+      <div class="section-num">Section 03</div>
+      <h2>Definitions</h2>
+      <div class="normative-block">
+        <div class="normative-header">Defined Terms</div>
+        <div class="normative-body">
+          <div class="req-row">
+            <div class="req-id">Decision Receipt</div>
+            <div class="req-text">A cryptographically signed, serialized artifact produced at policy evaluation time. Constitutes proof that authorization was evaluated before execution. Not a log entry.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">PolicyHash</div>
+            <div class="req-text">A deterministic hash of the canonical policy state active at evaluation time. Enables independent verification that policy has not been altered since the decision was made.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">Execution Gate</div>
+            <div class="req-text">The enforcement point at which a verified Decision Receipt is required before any action is permitted to proceed. Absence of receipt must result in execution denial.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">Governed Spine</div>
+            <div class="req-text">An append-only, causally ordered record of all governed events. Serves as the authoritative forensic record. Not a log. Mutations are not permitted.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">Denial Receipt</div>
+            <div class="req-text">An affirmative governance artifact produced when an action is denied. Constitutes proof that the constraint functioned as designed.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">Fail-Closed</div>
+            <div class="req-text">System behavior under ambiguity or failure: when authorization cannot be verified, the action does not proceed. Uncertainty resolves to denial, never to silent permission.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">Human Authority</div>
+            <div class="req-text">A cryptographically bound delegation by a human operator authorizing a specific action. Not an approval click. A signed, narrow, scoped authorization artifact.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. NORMATIVE REQUIREMENTS -->
+    <section class="spec-section" id="normative">
+      <div class="section-num">Section 04</div>
+      <h2>Normative Requirements</h2>
+      <p>The following requirements are normative. A system claiming CAES conformance must satisfy all requirements at the applicable compliance level.</p>
+
+      <h3>4.1 — Authorization Requirements</h3>
+      <div class="normative-block">
+        <div class="normative-header">CAES-AUTH</div>
+        <div class="normative-body">
+          <div class="req-row">
+            <div class="req-id">AUTH-01</div>
+            <div class="req-text">Every action crossing an Effect Boundary <span class="must">must</span> be preceded by a policy evaluation.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">AUTH-02</div>
+            <div class="req-text">Policy evaluation <span class="must">must</span> produce a Decision Receipt before execution proceeds.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">AUTH-03</div>
+            <div class="req-text">The Decision Receipt <span class="must">must</span> contain a deterministic PolicyHash bound to the policy state at evaluation time.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">AUTH-04</div>
+            <div class="req-text">Execution <span class="must">must</span> fail closed if a verified Decision Receipt cannot be produced.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">AUTH-05</div>
+            <div class="req-text">There <span class="must">must</span> be no implicit authorization path. Absence of receipt equals absence of authority.</div>
+          </div>
+        </div>
+      </div>
+
+      <h3>4.2 — Evidence Requirements</h3>
+      <div class="normative-block">
+        <div class="normative-header">CAES-EVID</div>
+        <div class="normative-body">
+          <div class="req-row">
+            <div class="req-id">EVID-01</div>
+            <div class="req-text">Decision Receipts <span class="must">must</span> be cryptographically signed and independently verifiable.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">EVID-02</div>
+            <div class="req-text">Denial decisions <span class="must">must</span> produce a Denial Receipt equivalent in structural integrity to an approval receipt.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">EVID-03</div>
+            <div class="req-text">The governed spine <span class="must">must</span> be append-only. Canonical records must not be mutated, overwritten, or soft-deleted.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">EVID-04</div>
+            <div class="req-text">A terminal outcome record <span class="must">must</span> exist for every executed action. Progress telemetry does not satisfy this requirement.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">EVID-05</div>
+            <div class="req-text">Evidence artifacts <span class="must">must</span> be verifiable without access to the live production system.</div>
+          </div>
+        </div>
+      </div>
+
+      <h3>4.3 — Failure Requirements</h3>
+      <div class="normative-block">
+        <div class="normative-header">CAES-FAIL</div>
+        <div class="normative-body">
+          <div class="req-row">
+            <div class="req-id">FAIL-01</div>
+            <div class="req-text">System failure during authorization <span class="must">must</span> resolve to execution denial, never silent continuation.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">FAIL-02</div>
+            <div class="req-text">Failure events <span class="must">must</span> be recorded. Silent degradation is a conformance violation.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">FAIL-03</div>
+            <div class="req-text">Partial execution state <span class="must not">must not</span> persist when spine append fails prior to action execution.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. CORE PRIMITIVES -->
+    <section class="spec-section" id="primitives">
+      <div class="section-num">Section 05</div>
+      <h2>Core Primitives</h2>
+      <p>CAES defines three structural primitives. These are the minimum objects a conformant system must be able to produce, persist, and present to an auditor.</p>
+
+      <h3>Primitive 1 — The Decision Receipt</h3>
+      <p>The Decision Receipt is the atomic unit of governed authorization. It is produced at evaluation time — not after execution — and binds the following: the identity of the requesting actor, the canonical policy state (via PolicyHash), the disposition (Approve / Deny / RequiresHuman), the timestamp of evaluation, and a cryptographic signature.</p>
+      <div class="note">A Decision Receipt is not a log entry. It is an authorization artifact. The distinction is structural: logs record what happened. A Decision Receipt proves that authorization was evaluated before it happened.</div>
+
+      <h3>Primitive 2 — The PolicyHash</h3>
+      <p>The PolicyHash is a deterministic, reproducible hash of the canonical policy state active at the moment of evaluation. Any party with access to the policy definition can independently recompute the hash. A PolicyHash mismatch is proof of policy drift or manipulation.</p>
+
+      <h3>Primitive 3 — The Governed Spine</h3>
+      <p>The Governed Spine is the append-only, causally ordered record of all governed events. It is not a log. It is the forensic source of truth. Every event in the spine carries: a unique immutable identifier, a causal parent reference, a tenant scope, a hash commitment over the payload, and a timestamp assigned at ingestion.</p>
+    </section>
+
+    <!-- 6. CAUSAL CHAIN -->
+    <section class="spec-section" id="causal-chain">
+      <div class="section-num">Section 06</div>
+      <h2>Causal Chain</h2>
+      <p>Every governed operation produces a spine — a causally ordered sequence of governed events. The spine is the complete forensic record of a single operational run.</p>
+      <p>The canonical CAES causal chain is:</p>
+      <p style="font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--paper-warm);border:1px solid var(--rule);padding:16px 20px;line-height:2;">
+        <code>Trigger</code> → <code>Intent</code> → <code>Justification</code> → <code>Decision</code> → <code>Action</code> → <code>Outcome</code>
+      </p>
+      <div class="normative-block">
+        <div class="normative-header">Chain Invariants</div>
+        <div class="normative-body">
+          <div class="req-row">
+            <div class="req-id">CI-01</div>
+            <div class="req-text">Exactly one <code>Trigger</code> per spine.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">CI-02</div>
+            <div class="req-text">Exactly one terminal <code>Outcome</code> per <code>Action</code>.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">CI-03</div>
+            <div class="req-text">No <code>Action</code> without a preceding <code>Decision</code> with a valid Decision Receipt.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">CI-04</div>
+            <div class="req-text">No spine object is mutable after promotion to the authoritative ledger.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. AUTHORITY MODEL -->
+    <section class="spec-section" id="authority">
+      <div class="section-num">Section 07</div>
+      <h2>Authority Model</h2>
+      <p>CAES does not prescribe how policy is authored. It defines how authority is <em>exercised</em> and <em>proven</em>.</p>
+      <p>When high-stakes actions require human review, a CAES-conformant system must not merely pause and resume. It must produce a cryptographic signing request. The human operator must produce a signed delegation — narrow in scope, bound to the specific action, and recorded in the governed spine.</p>
+      <p>Human authority in a CAES system is:</p>
+      <p><strong>Scoped</strong> — authorization applies to a specific action, not a class of actions. <strong>Temporal</strong> — the delegation has explicit validity bounds. <strong>Non-repudiable</strong> — the operator's identity is cryptographically bound. <strong>Recorded</strong> — the delegation is a spine event, not an out-of-band approval.</p>
+      <div class="note">The CAES authority model treats humans as governed actors — not system overrides. Dissent, escalation, and override are first-class events in the governed spine, not exceptions to it.</div>
+    </section>
+
+    <!-- 8. COMPLIANCE -->
+    <section class="spec-section" id="compliance">
+      <div class="section-num">Section 08</div>
+      <h2>Compliance Criteria</h2>
+      <p>CAES conformance is defined in three levels. Higher levels are supersets of lower levels.</p>
+
+      <div class="tier-block">
+        <div class="tier-header">
+          <div class="tier-level l1">Level 1</div>
+          <div class="tier-name">Receipt-Bounded Execution</div>
+        </div>
+        <div class="tier-reqs">
+          Satisfies: <span>AUTH-01</span><span>AUTH-02</span><span>AUTH-04</span><span>AUTH-05</span><span>EVID-02</span><span>FAIL-01</span><span>FAIL-02</span><br>
+          Minimum viable CAES conformance. Every execution is receipt-bounded and fail-closed.
+        </div>
+      </div>
+
+      <div class="tier-block">
+        <div class="tier-header">
+          <div class="tier-level l2">Level 2</div>
+          <div class="tier-name">Verifiable Evidence Chain</div>
+        </div>
+        <div class="tier-reqs">
+          Satisfies: Level 1 + <span>AUTH-03</span><span>EVID-01</span><span>EVID-03</span><span>EVID-04</span><span>EVID-05</span><span>FAIL-03</span><br>
+          Full cryptographic evidence chain. PolicyHash binding. Offline-verifiable evidence artifacts.
+        </div>
+      </div>
+
+      <div class="tier-block">
+        <div class="tier-header">
+          <div class="tier-level l3">Level 3</div>
+          <div class="tier-name">Full Constitutional Conformance</div>
+        </div>
+        <div class="tier-reqs">
+          Satisfies: Level 2 + Human Authority Model + Causal Chain Invariants + Full Spine Spec<br>
+          Complete CAES implementation. Suitable for regulated industries, legal discovery, audit submission.
+        </div>
+      </div>
+
+      <div class="note">CAES does not provide third-party certification at this time. Independent validation against this specification is the responsibility of the implementing organization. The CAES Working Group intends to publish a formal test suite in a future revision.</div>
+    </section>
+
+    <!-- 9. REFERENCE IMPLEMENTATION -->
+    <section class="spec-section" id="reference">
+      <div class="section-num">Section 09</div>
+      <h2>Reference Implementation</h2>
+      <p>The CAES Working Group designates a single reference implementation per specification version. The reference implementation demonstrates normative conformance and serves as the baseline for interpretive questions about specification intent.</p>
+      <p>Designation as the reference implementation does not imply commercial endorsement by the CAES Working Group. Other implementations claiming CAES conformance must independently satisfy the requirements defined in this specification.</p>
+
+      <div class="ref-impl-block">
+        <div>
+          <div class="ref-impl-label">CAES v0.1 Reference Implementation</div>
+          <div class="ref-impl-name">Keon Systems — Governed Execution</div>
+          <p class="ref-impl-desc">Implements CAES Level 3 conformance · ALPHA authority protocol · Evidence Pack export · Governed Memory Spine</p>
+        </div>
+        <a href="https://keonsystems.com" class="ref-impl-link">View Implementation →</a>
+      </div>
+    </section>
+
+    <!-- 10. VERSION HISTORY -->
+    <section class="spec-section" id="versions">
+      <div class="section-num">Section 10</div>
+      <h2>Version History</h2>
+      <table class="version-table">
+        <thead>
+          <tr>
+            <th>Version</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Summary</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="current">
+            <td class="ver">v0.1</td>
+            <td>Draft</td>
+            <td>March 2026</td>
+            <td>Initial normative draft. Core primitives, causal chain invariants, compliance tiers, authority model. Open for comment.</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note">CAES is a living specification. Revisions are versioned and publicly documented. The specification does not change without a version increment. Backward-incompatible changes increment the major version.</div>
+    </section>
+
+    <!-- 11. CHARTER -->
+    <section class="spec-section" id="charter">
+      <div class="section-num">Section 11</div>
+      <h2>Working Group Charter</h2>
+
+      <div class="charter-block">
+        <p>The CAES Working Group exists to formalize requirements for constitutional AI execution. The Working Group publishes normative specifications defining what a governed AI system must be able to prove — not how it must be built. Specification updates are versioned and publicly documented. Reference implementations may be independently validated against this specification.</p>
+      </div>
+
+      <h3>Membership</h3>
+      <div class="wg-block">
+        <div><span class="wg-role">Founding Member</span> CAES Working Group — Established March 2026</div>
+        <div><span class="wg-role">Specification Lead</span> Open</div>
+        <div><span class="wg-role">Ref. Impl. Maintainer</span> Keon Systems</div>
+      </div>
+
+      <h3>Process</h3>
+      <p>Specification amendments are proposed via documented change requests. Each change request must identify: the normative requirement affected, the rationale for change, and backward compatibility implications. Changes are published with the next versioned release. There are no informal amendments.</p>
+      <div class="note">The Working Group operates on a principle of minimal governance. The specification must remain foundational, normative, and unbloated. CAES defines primitives. Implementations build on them.</div>
+    </section>
+
+    <!-- 12. AMENDMENT PROCESS -->
+    <section class="spec-section" id="process">
+      <div class="section-num">Section 12</div>
+      <h2>Amendment Process</h2>
+      <p>CAES does not change silently. Every normative change is versioned. Every version is publicly documented with a summary of what changed and why. The amendment process exists to make the specification more correct — not more comprehensive. Scope creep is not an amendment.</p>
+      <p>To propose an amendment: document the requirement, the problem it solves, and the conformance implications. Submit to the Working Group. Amendment proposals are acknowledged, considered, and either incorporated into the next versioned draft or formally declined with rationale.</p>
+    </section>
+
+  </main>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div>CAES Working Group · Constitutional AI Execution Standard · <strong>v0.1 Draft</strong> · March 2026</div>
+  <div>
+    <a href="#">Specification</a> &nbsp;·&nbsp;
+    <a href="#">Change Log</a> &nbsp;·&nbsp;
+    <a href="#">Reference Implementation</a> &nbsp;·&nbsp;
+    <a href="#">Contact Working Group</a>
+  </div>
+  <div>This specification is published for public review. All rights reserved pending formal adoption.</div>
+</footer>
+
+<script>
+  // Highlight active TOC link on scroll
+  const sections = document.querySelectorAll('.spec-section');
+  const links = document.querySelectorAll('.toc-link');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const id = e.target.id;
+        const active = document.querySelector(`.toc-link[href="#${id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
