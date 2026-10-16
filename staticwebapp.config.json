@@ -1,0 +1,29 @@
+{
+  "routes": [
+    {
+      "route": "/spec",
+      "redirect": "/spec/caes-v0.2.0.html",
+      "statusCode": 302
+    },
+    {
+      "route": "/spec/",
+      "redirect": "/spec/caes-v0.2.0.html",
+      "statusCode": 302
+    }
+  ],
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/404.html",
+      "statusCode": 404
+    }
+  },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "X-Frame-Options": "SAMEORIGIN",
+    "Content-Security-Policy": "default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; script-src 'self' 'unsafe-inline'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'"
+  },
+  "mimeTypes": {
+    ".md": "text/plain; charset=utf-8"
+  }
+}

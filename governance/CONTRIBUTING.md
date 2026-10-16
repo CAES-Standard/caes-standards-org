@@ -29,7 +29,7 @@ CAES is a normative specification. Contributions must preserve structural clarit
 Amendment proposals must include:
 
 - Affected section
-- Normative requirement ID
+- Normative requirement ID. v0.2.0 does not yet assign stable IDs. Cite the section heading until it does.
 - Structural issue description
 - Rationale
 - Backward compatibility implications

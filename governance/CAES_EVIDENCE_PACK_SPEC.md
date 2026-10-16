@@ -1,6 +1,7 @@
 # CAES Evidence Pack Format Specification
 
-**Applies To:** CAES v0.1.1  
+**Applies To:** CAES v0.1.1
+**Revision note:** Not yet revised for CAES v0.2.0. Do not treat this draft as the v0.2.0 Evidence Pack specification.
 **Status:** Draft  
 **Category:** Normative Artifact Specification  
 

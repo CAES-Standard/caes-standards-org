@@ -14,6 +14,7 @@
 
 | Document | What it is |
 |---|---|
+| [Published site](https://red-desert-07272640f.1.azurestaticapps.net/) | Azure Static Web App `swa-caes-eastus2` |
 | [spec/caes-v0.2.0.html](spec/caes-v0.2.0.html) | HTML rendering of CAES v0.2.0 and CPP v1.0 |
 | [caes-standard-v0.2.0-draft.md](caes-standard-v0.2.0-draft.md) | Canonical CAES v0.2.0 text |
 | [CPP-v1.0.md](CPP-v1.0.md) | Canonical CPP v1.0 text |

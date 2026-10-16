@@ -1,6 +1,7 @@
 # CAES Test Suite Specification
 
-**Applies To:** CAES v0.1.1 (Draft)  
+**Applies To:** CAES v0.1.1 (Draft)
+**Revision note:** Not yet revised for CAES v0.2.0. The v0.2.0 level tables are the current test source until this suite is revised.
 **Working Group:** CAES-WG  
 **Category:** Normative Test Requirements  
 

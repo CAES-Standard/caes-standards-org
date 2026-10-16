@@ -1,10 +1,12 @@
 # CAES
 ## Constitutional AI Execution Standard
 
-**Version:** v0.1.1 (Draft)  
-**Status:** Public Review  
-**Working Group:** CAES-WG  
-**Category:** Normative Specification  
+**Version:** v0.1.1 (Draft)
+**Status:** Superseded by [v0.2.0](caes-standard-v0.2.0-draft.md)
+**Working Group:** CAES-WG
+**Category:** Normative Specification
+
+> **Superseded for new conformance claims.** The current public draft is CAES v0.2.0 with CPP v1.0. Read the [v0.2.0 draft](caes-standard-v0.2.0-draft.md) or the [HTML specification](spec/caes-v0.2.0.html). The text below preserves v0.1.1.
 
 ---
 

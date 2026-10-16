@@ -1,7 +1,8 @@
 # CAES Public Conformance Registry Model
 
 **Status:** Draft  
-**Applies To:** CAES v0.1.1  
+**Applies To:** CAES v0.1.1
+**Revision note:** Not yet revised for CAES v0.2.0.
 
 ---
 

@@ -7,13 +7,13 @@ Implementations claiming CAES compliance MUST publish a complete Conformance Sta
 ## Required Fields
 
 ### CAES Version
-(e.g., v0.1.1)
+(e.g., v0.2.0)
 
 ### Claimed Compliance Level
 Level 1 / Level 2 / Level 3
 
 ### Effect Boundary Categories Governed
-(List categories 1–6 and classification: Hard / Soft)
+(List every normative Effect Boundary category governed. v0.2.0 defines seven categories. An implementation must not narrow that set.)
 
 ### Receipt Verification Method
 Describe cryptographic verification and trust root.

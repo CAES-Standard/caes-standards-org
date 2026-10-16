@@ -2,7 +2,9 @@
 
 **Working Group:** CAES-WG  
 **Specification Status:** Public Draft  
-**Current Version:** v0.1.1  
+**Current Version:** v0.2.0 (Public Review)
+
+Companion artifact drafts in this directory that still say "Applies To: CAES v0.1.1" have not been revised for v0.2.0. They are not the v0.2.0 normative text.
 
 ---
 
