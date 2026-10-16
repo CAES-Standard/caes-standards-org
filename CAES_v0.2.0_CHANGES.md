@@ -116,3 +116,31 @@
 ---
 
 *CAES Working Group · v0.2.0 Hardening Pass · March 2026*
+
+---
+
+## Interoperability completion (same public draft)
+
+The v0.2.0 public draft now includes the contracts required before an interoperability claim. This completion is part of v0.2.0. It is not a new version number. Where an earlier paragraph conflicts with Interoperability Contracts in `caes-standard-v0.2.0-draft.md`, the contracts control.
+
+### What was completed
+
+- Level 1 uses a Decision Record. A Level 2 Decision Receipt is that record plus the JWS profile and PolicyHash. "Unverifiable" at Level 1 means a missing required field or a failed readback.
+- Stable requirement IDs (`CAES-` and `CPP-`) are assigned on the obligations they name. An ID is not recycled for a different obligation.
+- Policy disposition, execution authority, and outcome evidence are separate states. An Approved disposition can still be blocked.
+- PolicyHash is `lowercase-hex(SHA-256(JCS(effective_policy_bundle)))` under RFC 8785. It is required at Level 2 and Level 3.
+- Receipts at Level 2 and Level 3 are flattened JWS JSON. Interchange algorithms are `EdDSA` (Ed25519) and `ES256`. `iat` and `exp` are signer-asserted RFC 3339 timestamps. A signature does not prove clock accuracy. For interchange, `exp - iat` is at most 15 minutes and declared skew is at most 120 seconds.
+- Effect categories are not mutually exclusive. CPP `effect_type` is not a one-to-one map onto them. `ExternalInvocation` can require ExternalSideEffect, GovernanceRelevantState, and WorkflowTransition together. `SafetyCriticalActuation` has no CPP `effect_type` in this version, so an action that lists it is Denied.
+- Obligations have phases `pre_effect`, `continuous`, and `post_effect`. A failed post-effect obligation does not undo a completed effect.
+- Streaming is either `buffered` or `segmented`. Emission is the first governed-content byte. A completion record is outcome evidence.
+- Replay reserves the tuple `(issuer, tenant_id, audience, action_id, payload_hash, receipt_id)` before the effect. States are Reserved, Consumed, Failed, Abandoned, Uncertain, and Expired. A crash after the effect and before completion is Uncertain. A fresh receipt must not repeat that effect until reconciliation shows it did not occur.
+- Each of the eight chaos modes has its own expected behavior, evidence, and pass condition. Key-rotation overlap may be legitimate. Duplicate receipt injection must not execute twice and must preserve the original evidence. An interrupted pack export must not look sealed.
+- The Evidence Pack annex is `governance/CAES_EVIDENCE_PACK_SPEC.md` at pack spec version `0.2.0`.
+- The sentence that an AI system must behave as a legally accountable actor is rationale. It is not a conformance requirement. Observation and recording still carry the same governance obligations as execution.
+- Fixtures for the gate are in `conformance/CAES_v0.2.0_FIXTURES.md`.
+
+### What this completion does not do
+
+- It does not certify an implementation.
+- It does not claim that two implementations interoperate until those fixtures have been met by more than one implementation.
+- It does not rewrite the preserved v0.1.1 text in `caes-standard.md`.

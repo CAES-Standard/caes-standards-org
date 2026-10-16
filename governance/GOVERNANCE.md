@@ -4,7 +4,7 @@
 **Specification Status:** Public Draft  
 **Current Version:** v0.2.0 (Public Review)
 
-Companion artifact drafts in this directory that still say "Applies To: CAES v0.1.1" have not been revised for v0.2.0. They are not the v0.2.0 normative text.
+The Evidence Pack specification in this directory is normative annex `0.2.0` for CAES v0.2.0 Level 2 and Level 3 (CAES-PAK-01). Other companion drafts that still say "Applies To: CAES v0.1.1" have not been revised into v0.2.0 normative text. The CLI validator and the public registry model are in that group. The conformance template, the test suite, and the contributing guide have been updated for the v0.2.0 fields and requirement IDs.
 
 ---
 

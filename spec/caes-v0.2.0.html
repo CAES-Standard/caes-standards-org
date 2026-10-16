@@ -720,22 +720,23 @@
     <a class="toc-link" href="#non-compliant">10. Non-compliant patterns</a>
     <a class="toc-link" href="#behavioral">11. Behavioral governance</a>
     <a class="toc-link" href="#privacy">12. Privacy and recording</a>
-    <a class="toc-link" href="#conformance">13. Conformance claims</a>
-    <a class="toc-link" href="#reference">14. Reference and governance</a>
+    <a class="toc-link" href="#contracts">13. Interoperability contracts</a>
+    <a class="toc-link" href="#conformance">14. Conformance claims</a>
+    <a class="toc-link" href="#reference">15. Reference and governance</a>
 
     <div class="toc-section-label cpp">Part II · CPP v1.0</div>
-    <a class="toc-link" href="#cpp">15. Purpose and scope</a>
-    <a class="toc-link" href="#cpp-requirements">16. Core requirements</a>
-    <a class="toc-link" href="#cpp-model">17. Policy model</a>
-    <a class="toc-link" href="#cpp-evaluation">18. Evaluation and PolicyHash</a>
-    <a class="toc-link" href="#cpp-binding">19. Output and binding</a>
-    <a class="toc-link" href="#cpp-conflict">20. Conflicts, denial, obligations</a>
-    <a class="toc-link" href="#cpp-change">21. Change and lifecycle</a>
-    <a class="toc-link" href="#cpp-conformance">22. CPP conformance</a>
+    <a class="toc-link" href="#cpp">16. Purpose and scope</a>
+    <a class="toc-link" href="#cpp-requirements">17. Core requirements</a>
+    <a class="toc-link" href="#cpp-model">18. Policy model</a>
+    <a class="toc-link" href="#cpp-evaluation">19. Evaluation and PolicyHash</a>
+    <a class="toc-link" href="#cpp-binding">20. Output and binding</a>
+    <a class="toc-link" href="#cpp-conflict">21. Conflicts, denial, obligations</a>
+    <a class="toc-link" href="#cpp-change">22. Change and lifecycle</a>
+    <a class="toc-link" href="#cpp-conformance">23. CPP conformance</a>
 
     <div class="toc-section-label">Publication</div>
-    <a class="toc-link" href="#changes">23. Changes from v0.1.1</a>
-    <a class="toc-link" href="#status">24. Status</a>
+    <a class="toc-link" href="#changes">24. Changes from v0.1.1</a>
+    <a class="toc-link" href="#status">25. Status</a>
   </aside>
 
   <main id="content">
@@ -813,6 +814,7 @@
         <li>Offline-verifiable artifacts</li>
         <li>Explicit authority delegation for high-stakes actions</li>
       </ul>
+      <p>Which of these are required at each level is the <a href="#contracts">applicability matrix</a>. Cryptographic evidence, the Governed Spine, and offline artifacts are Level 2 and Level 3 requirements. Level 1 requires a pre-effect Decision Record and fail-closed enforcement.</p>
       <blockquote class="canon">
         <p>Governance applies to any output capable of producing consequential effect, including behavioral outputs.</p>
       </blockquote>
@@ -852,6 +854,10 @@
             <div class="req-text">Implementations MUST NOT narrow or exclude the categories above.</div>
           </div>
           <div class="req-row">
+            <div class="req-id">CAES-EFF-01</div>
+            <div class="req-text">Categories are not mutually exclusive. One action can cross several categories at once. Every crossed category remains in force. See <a href="#composition">effect composition</a>.</div>
+          </div>
+          <div class="req-row">
             <div class="req-id">Internal</div>
             <div class="req-text">Internal computation, model inference, and non-effecting reasoning are out of scope unless they cross one of the above categories.</div>
           </div>
@@ -869,7 +875,7 @@
         <div class="normative-body">
           <div class="req-row">
             <div class="req-id">1</div>
-            <div class="req-text">Absence of authorization is denial. An action MUST NOT proceed if a verified Decision Receipt cannot be produced. There is no implicit authorization path.</div>
+            <div class="req-text">Absence of authorization is denial. An action MUST NOT proceed if the Decision Record required at the claimed level cannot be produced and checked. At Level 1 that check is structural. At Level 2 and Level 3 it includes signature and PolicyHash verification. There is no implicit authorization path.</div>
           </div>
           <div class="req-row">
             <div class="req-id">2</div>
@@ -891,8 +897,8 @@
       </div>
       <p>A fail-closed event MUST:</p>
       <ul>
-        <li>produce a denial record equivalent in structure to a Denial Receipt</li>
-        <li>append that record to the Governed Spine</li>
+        <li>produce a denial record with the persistence requirements of that level</li>
+        <li>at Level 2 and Level 3, append that record to the Governed Spine</li>
         <li>surface a structured error indicator to the caller</li>
       </ul>
       <blockquote class="canon"><p>Uncertainty is denial. Silence is non-compliant.</p></blockquote>
@@ -907,11 +913,11 @@
         <div class="normative-body">
           <div class="req-row">
             <div class="req-id">1</div>
-            <div class="req-text">Decision precedes execution. A Decision Receipt MUST be produced, persisted, and verified before any effect-bearing action is initiated.</div>
+            <div class="req-text">Decision precedes execution. A Decision Record MUST be produced, persisted, and checked before any effect-bearing action is initiated. At Level 2 and Level 3 that record is a Decision Receipt.</div>
           </div>
           <div class="req-row">
             <div class="req-id">2</div>
-            <div class="req-text">Receipt is the gate. The execution layer MUST check for a verified Decision Receipt as its first action. No receipt means no execution.</div>
+            <div class="req-text">Record is the gate. The execution layer MUST check for the required Decision Record as its first action. No record means no execution.</div>
           </div>
           <div class="req-row">
             <div class="req-id">3</div>
@@ -946,10 +952,10 @@
             <tr><th scope="col">Disposition</th><th scope="col">Meaning</th><th scope="col">Execution outcome</th></tr>
           </thead>
           <tbody>
-            <tr><td class="ver">Approved</td><td>Action is authorized as proposed</td><td>Execution proceeds</td></tr>
-            <tr><td class="ver">Modified</td><td>Action is authorized with a policy-defined transformation</td><td>Execution proceeds with transformed payload</td></tr>
-            <tr><td class="ver">Denied</td><td>Action is not authorized</td><td>Execution does not proceed; Denial Receipt produced</td></tr>
-            <tr><td class="ver">RequiresHumanAuthorization</td><td>Action requires explicit human authorization before proceeding</td><td>Execution suspended; escalation pathway invoked</td></tr>
+            <tr><td class="ver">Approved</td><td>The policy accepted the action as proposed</td><td>The effect may proceed only while execution authority is live</td></tr>
+            <tr><td class="ver">Modified</td><td>The policy accepted a transformed action</td><td>The effect may proceed only on the transformed payload, and only while execution authority is live</td></tr>
+            <tr><td class="ver">Denied</td><td>The policy rejected the action</td><td>No effect. A denial record is produced</td></tr>
+            <tr><td class="ver">RequiresHumanAuthorization</td><td>The policy requires a human decision before any effect</td><td>No effect until a later execution authority records that decision</td></tr>
           </tbody>
         </table>
       </div>
@@ -962,7 +968,7 @@
           </div>
           <div class="req-row">
             <div class="req-id">Denied</div>
-            <div class="req-text">A Denied disposition MUST produce a Denial Receipt with equivalent persistence and signing requirements as an approval receipt.</div>
+            <div class="req-text">A Denied disposition MUST produce a denial record with the persistence requirements of that level. Signing applies at Level 2 and Level 3.</div>
           </div>
           <div class="req-row">
             <div class="req-id">Escalate</div>
@@ -979,10 +985,10 @@
     <section class="spec-section" id="primitives">
       <div class="section-num">Section 08</div>
       <h2>Core primitives</h2>
-      <p>CAES formalizes three foundational objects. All three MUST be present for Level 2 conformance. Level 1 requires the Decision Receipt at minimum.</p>
+      <p>CAES formalizes three foundational objects. All three MUST be present for Level 2 conformance. Level 1 requires a Decision Record. A Level 2 Decision Receipt is a signed Decision Record and satisfies the Level 1 record requirements.</p>
 
-      <h3 id="receipt">1. Decision Receipt</h3>
-      <p>A Decision Receipt is a cryptographically signed, pre-execution authorization artifact that proves a specific action was evaluated against a specific policy before execution occurred.</p>
+      <h3 id="receipt">1. Decision Record and Decision Receipt</h3>
+      <p>A Decision Record is the pre-effect governance artifact. A Decision Receipt is a Decision Record with the Level 2 signature and PolicyHash profile. At Level 1, "unverifiable" means a missing required field or a failed readback. It does not mean signature verification.</p>
       <div class="normative-block">
         <div class="normative-header">Required properties</div>
         <div class="normative-body">
@@ -991,39 +997,40 @@
             <div class="req-text">MUST be produced before the governed action executes. A receipt produced after execution is non-compliant.</div>
           </div>
           <div class="req-row">
-            <div class="req-id">Signature</div>
-            <div class="req-text">MUST be signed using a verifiable asymmetric signature scheme. The signing algorithm MUST be explicitly specified in the Conformance Statement.</div>
+            <div class="req-id">CAES-SIG-01</div>
+            <div class="req-text">Level 2 and Level 3 MUST use a JWS under the <a href="#signing">signing profile</a>. If the signature is absent or does not verify, execution authority MUST NOT be granted. Level 1 does not require a signature.</div>
           </div>
           <div class="req-row">
-            <div class="req-id">PolicyHash</div>
-            <div class="req-text">MUST include the PolicyHash computed at evaluation time. Execution MUST fail closed if the PolicyHash is absent or cannot be verified.</div>
+            <div class="req-id">CAES-HASH-01</div>
+            <div class="req-text">Level 2 and Level 3 MUST embed the PolicyHash. If it is absent or does not verify, execution authority MUST NOT be granted. It is not a Level 1 blocker.</div>
           </div>
           <div class="req-row">
-            <div class="req-id">Action binding</div>
-            <div class="req-text">MUST uniquely identify the specific action authorized, including sufficient context to prevent replay against a different action or scope.</div>
+            <div class="req-id">Binding</div>
+            <div class="req-text">MUST identify the action, including tenant, intended executor, and enough of the payload to distinguish it from a different action. This binding does not by itself make the record single-use. Single-use is the <a href="#replay">replay lifecycle</a>.</div>
           </div>
           <div class="req-row">
             <div class="req-id">Disposition</div>
             <div class="req-text">MUST record the governing disposition: Approved, Modified, Denied, or RequiresHumanAuthorization.</div>
           </div>
           <div class="req-row">
-            <div class="req-id">Timestamp</div>
-            <div class="req-text">MUST record the time of evaluation in a verifiable, non-repudiable form.</div>
+            <div class="req-id">Time</div>
+            <div class="req-text"><code>iat</code> MUST be an RFC 3339 timestamp asserted by the producer. A signature does not prove that the clock was accurate. See <a href="#signing">CAES-SIG-06</a>.</div>
           </div>
           <div class="req-row">
             <div class="req-id">Persistence</div>
             <div class="req-text">MUST be written to durable storage and verified via immediate readback before execution proceeds. Acknowledgment alone is insufficient.</div>
           </div>
           <div class="req-row">
-            <div class="req-id">Spine entry</div>
-            <div class="req-text">MUST be appended to the Governed Spine as an authoritative event.</div>
+            <div class="req-id">CAES-SPN-01</div>
+            <div class="req-text">Level 2 and Level 3 MUST append the receipt to the Governed Spine before the effect. Level 1 does not require a spine append.</div>
           </div>
         </div>
       </div>
-      <p><strong>Denial Receipts.</strong> A Denial Receipt is a receipt with disposition <code>Denied</code>. Denial Receipts carry the same signing, persistence, and ledger requirements as approval receipts. A Denial Receipt is evidence that the constraint functioned. It is not an error.</p>
+      <p><strong>Denial records.</strong> A <code>Denied</code> disposition uses the same persistence rules as an approval at that level. At Level 2 the denial is signed. A denial is evidence that the constraint functioned. It is not an error.</p>
 
       <h3 id="policyhash">2. PolicyHash</h3>
-      <p>A PolicyHash is a deterministic cryptographic fingerprint of the canonical policy state active at the time of evaluation. CPP v1.0 defines how that hash is produced. See <a href="#cpp-evaluation">PolicyHash in CPP</a>.</p>
+      <p>A PolicyHash is the SHA-256 fingerprint of the effective policy bundle. It is required at Level 2 and Level 3. It is not a Level 1 blocker. The hashed bytes are the UTF-8 RFC 8785 (JCS) encoding of the bundle after imports are resolved and defaults are expanded. Runtime context is not part of the bundle.</p>
+      <p class="formula">PolicyHash = lowercase-hex(SHA-256(JCS(effective_policy_bundle)))</p>
       <div class="normative-block">
         <div class="normative-header">Required properties</div>
         <div class="normative-body">
@@ -1032,8 +1039,8 @@
             <div class="req-text">MUST use a defined, reproducible canonicalization method before hashing. The same policy inputs MUST always produce the same PolicyHash regardless of key ordering, whitespace, or encoding. The canonicalization method MUST be specified in the Conformance Statement.</div>
           </div>
           <div class="req-row">
-            <div class="req-id">Algorithm</div>
-            <div class="req-text">MUST use SHA-256 or a stronger approved algorithm. The algorithm MUST be specified.</div>
+            <div class="req-id">CAES-HASH-02</div>
+            <div class="req-text">The digest MUST be SHA-256, encoded as lowercase hexadecimal, over the RFC 8785 encoding of the effective policy bundle. The formula is in <a href="#policyhash">PolicyHash</a> and in CPP.</div>
           </div>
           <div class="req-row">
             <div class="req-id">When</div>
@@ -1056,7 +1063,7 @@
       <p>The PolicyHash is the proof that a specific policy version governed the decision. It MUST NOT be a pointer, a label, or a version string alone.</p>
 
       <h3 id="spine">3. Governed Spine</h3>
-      <p>The Governed Spine is an append-only, causally ordered, tenant-scoped record of all governed events.</p>
+      <p>The Governed Spine is an append-only, causally ordered, tenant-scoped record of governed events. Spine requirements apply at Level 2 and Level 3. Level 1 does not require a spine append (CAES-SPN-01).</p>
       <div class="normative-block">
         <div class="normative-header">Required properties</div>
         <div class="normative-body">
@@ -1105,24 +1112,24 @@
           <div class="tier-name">Receipt-bounded execution</div>
         </div>
         <div class="tier-reqs">
-          <p>All effect-boundary actions require verified Decision Receipts. Fail-closed enforcement.</p>
+          <p>All effect-boundary actions require a structurally checked Decision Record before the effect. Fail-closed enforcement. (CAES-PRE-01)</p>
         </div>
       </div>
       <div class="table-wrap">
         <table class="version-table">
           <thead><tr><th scope="col">Requirement</th><th scope="col">Test</th></tr></thead>
           <tbody>
-            <tr><td>Decision Receipt produced before execution</td><td>Verify receipt timestamp precedes execution timestamp</td></tr>
+            <tr><td>Decision Record produced before execution</td><td>Verify the record timestamp precedes the effect</td></tr>
             <tr><td>Receipt persisted with write-then-verify</td><td>Demonstrate readback verification step in implementation</td></tr>
             <tr><td>Execution blocked if receipt absent</td><td>Inject missing receipt; verify execution does not proceed</td></tr>
-            <tr><td>Execution blocked if receipt unverifiable</td><td>Corrupt receipt; verify execution does not proceed</td></tr>
+            <tr><td>Execution blocked if the Level 1 record is structurally invalid</td><td>Remove a required field or fail the readback; verify execution does not proceed</td></tr>
             <tr><td>Denial produces Denial Receipt</td><td>Trigger denial; verify denial record exists in ledger</td></tr>
             <tr><td>Fail-closed on verification failure</td><td>Simulate storage failure; verify execution halts</td></tr>
             <tr><td>No silent degradation path</td><td>Audit all execution paths; confirm no receipt-free path exists</td></tr>
           </tbody>
         </table>
       </div>
-      <p class="note">Exclusions from Level 1: PolicyHash canonicalization, cryptographic signing of receipts, spine ordering, and offline verification are not required at Level 1. Implementations SHOULD include them, but they are not Level 1 blockers.</p>
+      <p class="note">Not required at Level 1: PolicyHash, RFC 8785 canonicalization, JWS signature, spine ordering, and offline Evidence Pack verification. Implementations SHOULD include them. Their absence is not a Level 1 failure. The <a href="#matrix">applicability matrix</a> controls.</p>
 
       <div class="tier-block" id="level-2">
         <div class="tier-header">
@@ -1168,7 +1175,7 @@
             <tr><td>Delegation chain expiry enforced</td><td>Use expired delegation; verify rejection with structured error</td></tr>
             <tr><td>Delegation scope enforced</td><td>Use delegation for out-of-scope action; verify rejection</td></tr>
             <tr><td>Delegation binding target mandatory</td><td>Omit target binding; verify rejection with <code>BINDING_MISSING</code></td></tr>
-            <tr><td>Fail-closed under 8 chaos modes</td><td>Execute chaos harness; verify each mode produces a documented error, no silent pass, and no state corruption</td></tr>
+            <tr><td>Fail-closed under 8 chaos modes</td><td>Execute the chaos harness. Each mode MUST meet its own pass condition in <a href="#chaos">Chaos fixtures</a>. A shared error code is not a pass</td></tr>
             <tr><td>Evidence Pack contains PolicyHash artifact</td><td>Inspect exported pack; verify PolicyHash manifest present</td></tr>
             <tr><td>Evidence Pack contains DelegationChain artifact</td><td>Inspect exported pack for delegated actions; verify artifact present</td></tr>
             <tr><td>Evidence Pack contains ChaosTestAttestation</td><td>Inspect exported pack; verify attestation covering all 8 chaos modes</td></tr>
@@ -1181,7 +1188,7 @@
         </table>
       </div>
       <h3>Level 3 chaos modes</h3>
-      <p>Each mode is tested independently:</p>
+      <p>Each mode is tested independently. The pass condition is the one named for that mode. Denial is not assumed. A legitimate key-rotation overlap MAY succeed. An interrupted pack export MUST NOT look sealed.</p>
       <ol>
         <li>DB write failure</li>
         <li>Key rotation conflict</li>
@@ -1274,9 +1281,9 @@
       <p>Policies MAY include contextual or conditional rules, but MUST remain deterministically evaluable at the point of decision.</p>
 
       <h3>Behavioral decision requirement</h3>
-      <p>For any behavior crossing a Behavioral Effect Boundary, a Decision Receipt MUST be produced prior to output emission. The receipt MUST:</p>
+      <p>For any behavior crossing a Behavioral Effect Boundary, a Decision Record, or a Decision Receipt at Level 2, MUST exist before emission as defined in <a href="#streaming">Streaming and emission</a>. A completion record after the stream ends is outcome evidence, not prior authorization. The record MUST:</p>
       <ul>
-        <li>bind the behavior to the governing policy state (PolicyHash)</li>
+        <li>at Level 2 and Level 3, bind the behavior to the governing policy state (PolicyHash)</li>
         <li>capture the evaluated decision disposition</li>
         <li>include sufficient context to support audit and reconstruction</li>
       </ul>
@@ -1295,7 +1302,7 @@
       <p>All dispositions MUST be recorded and auditable.</p>
 
       <h3>Causal recording</h3>
-      <p>Behavioral decisions MUST be recorded in the Governed Spine, including the evaluated behavior or output reference, the Decision Receipt reference, the resulting disposition, and any transformation or escalation applied. Behavioral events are first-class governed events.</p>
+      <p>At Level 2 and Level 3, behavioral decisions MUST be recorded in the Governed Spine, including the evaluated behavior or output reference, the Decision Record reference, the resulting disposition, and any transformation or escalation applied. Behavioral events are first-class governed events.</p>
     </section>
 
     <section class="spec-section" id="privacy">
@@ -1304,7 +1311,7 @@
       <p>AI systems may record audio, video, or environmental data, capture user-generated content, and observe or infer personal or sensitive information. These capabilities introduce legal, privacy, and ownership obligations equivalent to or exceeding those applied to human actors. CAES requires that such capabilities be governed as effect-bearing operations. CPP lifecycle rules are in <a href="#cpp-lifecycle">CPP §14</a>.</p>
 
       <h3>Sensory Effect Boundary</h3>
-      <p>A Sensory Effect Boundary exists when an AI system can record audio, video, or other environmental signals; capture or store user content; or observe or infer personally identifiable or sensitive information. Crossing this boundary MUST be treated as a governed action subject to all Decision Receipt, PolicyHash, and Governed Spine requirements.</p>
+      <p>A Sensory Effect Boundary exists when an AI system can record audio, video, or other environmental signals; capture or store user content; or observe or infer personally identifiable or sensitive information. Crossing this boundary MUST be treated as a governed action. The record, signature, PolicyHash, and spine duties are those of the claimed level.</p>
 
       <h3>Consent and authorization</h3>
       <p>AI systems MUST NOT:</p>
@@ -1325,9 +1332,9 @@
       <p>Data deletion MUST be treated as a governed action. When data is deleted:</p>
       <ul>
         <li>the deletion MUST be executed through the governed execution pathway</li>
-        <li>the deletion MUST produce a Decision Receipt representing the action</li>
-        <li>the receipt MUST be recorded in the Governed Spine</li>
-        <li>the receipt MUST be retained even after the data itself is deleted</li>
+        <li>the deletion MUST produce a Decision Record representing the action</li>
+        <li>at Level 2 and Level 3, that record MUST be a signed receipt appended to the Governed Spine</li>
+        <li>the record MUST be retained even after the data itself is deleted</li>
       </ul>
       <blockquote class="canon"><p>The deletion record is permanent. The data is not.</p></blockquote>
 
@@ -1342,11 +1349,151 @@
 
       <h3>Enforcement timing</h3>
       <p>Privacy and recording policies MUST be enforced prior to data capture, prior to data usage, and prior to data retention or transfer. Post-hoc enforcement alone is non-compliant.</p>
-      <blockquote class="canon"><p>Capabilities that observe, record, or retain data carry the same governance obligations as actions that execute. AI systems MUST behave as legally accountable actors with respect to privacy, consent, data ownership, and content stewardship.</p></blockquote>
+      <blockquote class="canon"><p>Capabilities that observe, record, or retain data carry the same governance obligations as actions that execute. (CAES-PRV-01)</p></blockquote>
+      <p>Conformance is judged on observable behavior: an attributable decision, an identified responsible operator, the privacy controls in this section, authorization before capture or use, and an auditable effect. (CAES-PRV-02)</p>
+      <p class="note">Rationale, not a conformance requirement. The Working Group's aspiration is that these controls make an AI system accountable in the same practical sense as a human operator who records or retains data. That sentence does not confer legal status, and a conformance claim MUST NOT rest on it.</p>
+    </section>
+
+    <section class="spec-section" id="contracts">
+      <div class="section-num">Section 13</div>
+      <h2>Interoperability contracts</h2>
+      <p>These contracts complete the v0.2.0 public draft. Requirement IDs are stable. Editorial rearrangement MUST NOT recycle an ID for a different obligation. Where this section conflicts with an earlier paragraph on this page, this section controls. The Markdown source remains canonical. Fixtures are in <a href="../conformance/CAES_v0.2.0_FIXTURES.md">CAES_v0.2.0_FIXTURES.md</a>.</p>
+      <p>Three states are distinct and MUST NOT be collapsed into one field:</p>
+      <div class="table-wrap">
+        <table class="version-table">
+          <thead><tr><th scope="col">State</th><th scope="col">Meaning</th><th scope="col">ID</th></tr></thead>
+          <tbody>
+            <tr><td>Policy disposition</td><td>What the policy decided</td><td><code>CAES-STA-01</code></td></tr>
+            <tr><td>Execution authority</td><td>Whether prerequisites, scope, time bounds, and consumption state currently permit the effect</td><td><code>CAES-STA-02</code></td></tr>
+            <tr><td>Outcome evidence</td><td>What happened, including partial delivery, a blocked effect, and uncertain completion</td><td><code>CAES-STA-03</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>An <code>Approved</code> disposition does not by itself grant execution authority. Outcome evidence does not rewrite the disposition.</p>
+
+      <h3 id="matrix">Applicability matrix</h3>
+      <div class="table-wrap">
+        <table class="version-table">
+          <thead><tr><th scope="col">Obligation</th><th scope="col">ID</th><th scope="col">Level 1</th><th scope="col">Level 2</th><th scope="col">Level 3</th></tr></thead>
+          <tbody>
+            <tr><td>Decision Record before any governed effect</td><td><code>CAES-PRE-01</code></td><td>Required</td><td>Required</td><td>Required</td></tr>
+            <tr><td>Write-then-verify persistence</td><td><code>CAES-PRE-02</code></td><td>Required</td><td>Required</td><td>Required</td></tr>
+            <tr><td>Fail closed when the record is missing or structurally invalid</td><td><code>CAES-PRE-03</code></td><td>Required</td><td>Required</td><td>Required</td></tr>
+            <tr><td>Exactly one policy disposition</td><td><code>CAES-DSP-01</code></td><td>Required</td><td>Required</td><td>Required</td></tr>
+            <tr><td>JWS signature under this profile</td><td><code>CAES-SIG-01</code></td><td>Not required</td><td>Required</td><td>Required</td></tr>
+            <tr><td>PolicyHash of the effective bundle</td><td><code>CAES-HASH-01</code></td><td>Not required</td><td>Required</td><td>Required</td></tr>
+            <tr><td>RFC 8785 plus SHA-256, lowercase hex</td><td><code>CAES-HASH-02</code></td><td>Not required</td><td>Required</td><td>Required</td></tr>
+            <tr><td>Governed Spine append</td><td><code>CAES-SPN-01</code></td><td>Not required</td><td>Required</td><td>Required</td></tr>
+            <tr><td>Evidence Pack annex</td><td><code>CAES-PAK-01</code></td><td>Not required</td><td>Required</td><td>Required</td></tr>
+            <tr><td>Delegation, chaos fixtures, typed errors</td><td><code>CAES-L3-01</code></td><td>Not required</td><td>Not required</td><td>Required</td></tr>
+            <tr><td>CPP v1.0</td><td><code>CAES-CPP-01</code></td><td>Not required</td><td>Required</td><td>Required</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="signing">Signing and verification profile</h3>
+      <p>Level 2 and Level 3 receipts MUST use flattened JWS JSON (RFC 7515) with one signature. (CAES-SIG-02)</p>
+      <p>The protected header MUST contain <code>alg</code>, <code>kid</code>, and <code>typ</code> with value <code>caes-receipt+jws</code>. The payload is the JCS encoding of the receipt JSON. The JWS signing input is <code>BASE64URL(protected) || '.' || BASE64URL(JCS(payload))</code>.</p>
+      <p>Interchange algorithms are <code>EdDSA</code> (Ed25519) and <code>ES256</code> only. <code>none</code> and shared-secret algorithms are non-compliant. (CAES-SIG-03)</p>
+      <p><code>kid</code> MUST resolve through the Evidence Pack trust bundle or the trust anchors named in the Conformance Statement. An unknown or revoked <code>kid</code> MUST NOT grant execution authority. During a published rotation overlap, a signature under either key that is inside that window MAY be accepted. Overlap alone is not a reason to deny. (CAES-SIG-04)</p>
+      <p>Receipt claims MUST include <code>caes_version</code>, <code>receipt_id</code>, <code>tenant_id</code>, <code>issuer</code>, <code>audience</code>, <code>action_id</code>, <code>action_descriptor</code>, <code>payload_hash</code>, <code>disposition</code>, <code>enforcement_outcome</code>, <code>iat</code>, and <code>exp</code>. Level 2 claims also include <code>policy_id</code>, <code>policy_version</code>, <code>policy_hash</code>, and <code>matched_rules</code>. <code>payload_hash</code> is lowercase-hex SHA-256 of the canonical action payload that would be effected. (CAES-SIG-05)</p>
+      <p><code>iat</code> and <code>exp</code> MUST be RFC 3339 timestamps with a <code>Z</code> or numeric offset. They are signer-asserted. A signature does not prove that the clock was accurate. For an interchange claim, <code>exp - iat</code> MUST be at most 15 minutes, and declared clock skew MUST be at most 120 seconds. If clock accuracy is unknown, execution authority MUST NOT be granted. Archival verification MAY still report that the signature matches, and it MUST label the time as untrusted. An RFC 3161 time-stamp token is optional additional evidence. It does not replace <code>iat</code>, and it is required only when the Conformance Statement claims trusted-time assurance. (CAES-SIG-06)</p>
+      <p><code>exp</code> bounds execution authority. It does not erase an archived receipt. Later verification asks whether the signature and claims were valid when recorded. It does not ask whether the authority is still unused. (CAES-SIG-07)</p>
+
+      <h3 id="composition">Effect composition</h3>
+      <p>CPP <code>effect_type</code> values and these categories are not a one-to-one map. A policy names one <code>effect_type</code>. A concrete action lists every CAES category it crosses. Evaluation MUST select every installed policy whose <code>effect_type</code> applies to any listed category, then apply CPP conflict resolution to the combined matches. A category with no applicable policy is Denied. An <code>effect_type</code> outside the CPP set fails closed. (CAES-EFF-02, CPP-EFF-01)</p>
+      <div class="table-wrap">
+        <table class="version-table">
+          <thead><tr><th scope="col">CPP effect_type</th><th scope="col">CAES categories it can require</th></tr></thead>
+          <tbody>
+            <tr><td><code>Execution</code></td><td>ExternalSideEffect, WorkflowTransition, GovernanceRelevantState</td></tr>
+            <tr><td><code>ExternalInvocation</code></td><td>ExternalSideEffect, GovernanceRelevantState, WorkflowTransition</td></tr>
+            <tr><td><code>Communication</code></td><td>HumanFacingOutput</td></tr>
+            <tr><td><code>BehavioralInfluence</code></td><td>BehavioralInfluence, HumanFacingOutput</td></tr>
+            <tr><td><code>DataMutation</code></td><td>ExternalSideEffect, GovernanceRelevantState</td></tr>
+            <tr><td><code>SensoryCapture</code></td><td>SensoryCapture</td></tr>
+            <tr><td><code>Deletion</code></td><td>ExternalSideEffect</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><code>SafetyCriticalActuation</code> has no CPP <code>effect_type</code> in this version. An action that lists it therefore has no applicable policy for that category and is Denied.</p>
+      <p><code>ExternalInvocation</code> is the worked case: one call can be an external side effect, a governance-state change, and a workflow transition together. All three controls apply. Dropping one because the policy named only one type is non-compliant.</p>
+
+      <h3 id="tenants">Tenant selectors and dispositions</h3>
+      <p>Tenant comparison is a Unicode code-point match with no case folding and no normalization. The only wildcard is the exact string <code>*</code>. Every other value is literal. Tenant identifiers MUST NOT be <code>*</code>. A policy with <code>tenant_id</code> <code>*</code> MUST NOT be installed unless the installing authority presents a delegation whose scope is <code>cross_tenant_policy</code>. Otherwise that policy is ineligible. (CPP-TEN-01)</p>
+      <div class="table-wrap">
+        <table class="version-table">
+          <thead><tr><th scope="col">Rule action</th><th scope="col">Policy disposition</th><th scope="col">Execution consequence</th><th scope="col">ID</th></tr></thead>
+          <tbody>
+            <tr><td><code>allow</code></td><td>Approved</td><td>The effect may proceed only while execution authority is live</td><td><code>CPP-ACT-01</code></td></tr>
+            <tr><td><code>deny</code></td><td>Denied</td><td>No effect</td><td><code>CPP-ACT-02</code></td></tr>
+            <tr><td><code>modify</code></td><td>Modified</td><td>The transformed payload MUST be named in the record before any byte of the effect. Executing the pre-transform payload is non-compliant</td><td><code>CPP-ACT-03</code></td></tr>
+            <tr><td><code>escalate</code></td><td>RequiresHumanAuthorization</td><td>The record MUST name the required authority and the resumption conditions. The disposition itself does not authorize the effect</td><td><code>CPP-ACT-04</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 id="obligations">Obligations</h3>
+      <p>An obligation MUST declare <code>phase</code>: <code>pre_effect</code>, <code>continuous</code>, or <code>post_effect</code>. Obligations remain auditable and deterministic. They MUST NOT change the policy disposition. (CAES-OBL-01)</p>
+      <ul>
+        <li>A failed pre-effect obligation MUST NOT grant execution authority. Outcome evidence records the block. The disposition stays what the policy decided, including <code>Approved</code>.</li>
+        <li>A failed continuous obligation MUST stop further covered effects. Bytes already released stay in the outcome evidence.</li>
+        <li>A failed post-effect obligation MUST be recorded with a remediation duty. It MUST NOT be described as if the completed effect did not occur.</li>
+      </ul>
+
+      <h3 id="streaming">Streaming and emission</h3>
+      <p>Emission is the first byte of governed content that crosses the enforcement boundary. Caller-visible metadata that carries governed content is content. Pure framing, heartbeats, and flow control that cannot carry governed content are not emission. (CAES-STR-01)</p>
+      <p>The Conformance Statement MUST name one mode. (CAES-STR-02)</p>
+      <ul>
+        <li><strong>Buffered.</strong> No governed byte is released until one receipt covers the complete output.</li>
+        <li><strong>Segmented.</strong> Each segment is defined before release, hashed, and covered by a receipt before its first byte is released.</li>
+      </ul>
+      <p>A receipt cannot bind the hash of an output that does not exist yet. A completion record is outcome evidence of what left the system. It is not prior authorization of unknown bytes. (CAES-STR-03)</p>
+
+      <h3 id="replay">Replay lifecycle</h3>
+      <p>Fields do not make a receipt single-use. Before the effect, the executor MUST atomically and durably reserve execution authority for the tuple <code>(issuer, tenant_id, audience, action_id, payload_hash, receipt_id)</code>. (CAES-REP-01)</p>
+      <div class="table-wrap">
+        <table class="version-table">
+          <thead><tr><th scope="col">State</th><th scope="col">Meaning</th></tr></thead>
+          <tbody>
+            <tr><td>Reserved</td><td>Authority is held. The effect has not started.</td></tr>
+            <tr><td>Consumed</td><td>Completion was recorded after the effect.</td></tr>
+            <tr><td>Failed</td><td>The attempt ended with no effect.</td></tr>
+            <tr><td>Abandoned</td><td>A reservation was released after a crash before any effect.</td></tr>
+            <tr><td>Uncertain</td><td>The effect may have happened, and completion was not recorded.</td></tr>
+            <tr><td>Expired</td><td><code>exp</code> passed before a reservation was consumed.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Retry with the same receipt is allowed only from <code>Reserved</code> or <code>Abandoned</code>, inside <code>exp</code>, and only when no effect has started. If the executor crashes after the effect and before completion, the state MUST become <code>Uncertain</code>. A fresh receipt MUST NOT repeat that effect until reconciliation shows it did not occur. While the state is <code>Uncertain</code>, further execution of that action is blocked. (CAES-REP-02)</p>
+      <p>Offline verification checks the signature, the hash, and the recorded claims. It MUST NOT report that the authority is unused. Consumption state is an online enforcement fact. (CAES-REP-03)</p>
+
+      <h3 id="chaos">Chaos fixtures</h3>
+      <p>Each mode has its own pass condition. A shared error code is not sufficient. When two modes fire together, every applicable prevention still applies and every applicable evidence record is required. Integrity failures outrank availability failures: do not allow an unauthorized effect in order to finish a pack. (CAES-CH-00)</p>
+      <div class="table-wrap">
+        <table class="version-table">
+          <thead><tr><th scope="col">Mode</th><th scope="col">Required behavior</th><th scope="col">Pass condition</th><th scope="col">Code</th></tr></thead>
+          <tbody>
+            <tr><td>DB write failure</td><td>No effect. Do not treat a failed evidence write as permission to continue.</td><td>The effect is absent.</td><td><code>CAES-E-DB-WRITE</code></td></tr>
+            <tr><td>Key rotation conflict</td><td>Accept a signature under either key inside the published overlap. Reject an unknown or revoked <code>kid</code>.</td><td>A legitimate overlap is not denied. A revoked key grants no authority.</td><td><code>CAES-E-KEY-ROTATION</code></td></tr>
+            <tr><td>Clock skew</td><td>If skew exceeds the declared bound, or the clock is untrusted, grant no execution authority.</td><td>No effect outside the bound. Archival signature status may still be recorded as time-untrusted.</td><td><code>CAES-E-CLOCK-SKEW</code></td></tr>
+            <tr><td>Network partition during pack export</td><td>Do not publish a pack that looks complete and sealed.</td><td>The partial export fails verification.</td><td><code>CAES-E-PACK-PARTITION</code></td></tr>
+            <tr><td>Disk full during pack write</td><td>Same as a partition: no apparently complete sealed pack, and no corrupted success marker.</td><td>Verification fails closed on the incomplete pack.</td><td><code>CAES-E-PACK-DISK</code></td></tr>
+            <tr><td>Duplicate receipt injection</td><td>The second reservation does not execute. The original receipt and its evidence stay intact.</td><td>One effect at most. Original evidence still verifies.</td><td><code>CAES-E-RECEIPT-REPLAY</code></td></tr>
+            <tr><td>PolicyHash mismatch</td><td>No execution authority.</td><td>No effect. The mismatch is in the outcome evidence.</td><td><code>CAES-E-POLICYHASH-MISMATCH</code></td></tr>
+            <tr><td>Delegation chain expiry</td><td>No execution authority.</td><td>No effect. <code>CAES-E-DELEGATION-EXPIRY</code> is recorded.</td><td><code>CAES-E-DELEGATION-EXPIRY</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><code>BINDING_MISSING</code> remains the code when a delegation omits its target binding. (CAES-L3-02)</p>
+
+      <h3 id="evidence-pack">Evidence Pack</h3>
+      <p>Level 2 and Level 3 MUST produce an Evidence Pack that conforms to <a href="../governance/CAES_EVIDENCE_PACK_SPEC.md">governance/CAES_EVIDENCE_PACK_SPEC.md</a> at pack spec version <code>0.2.0</code>. That document is a normative annex of this draft. (CAES-PAK-01)</p>
+      <p>A pack that omits required evidence fails verification. Verification MUST be possible with no call to a private issuer service. Offline success MUST NOT be reported as "this authorization is still unused."</p>
     </section>
 
     <section class="spec-section" id="conformance">
-      <div class="section-num">Section 13</div>
+      <div class="section-num">Section 14</div>
       <h2>Conformance claims</h2>
       <p>Implementations claiming CAES compliance MUST publish a complete Conformance Statement that includes all of the following:</p>
       <div class="table-wrap">
@@ -1355,8 +1502,12 @@
           <tbody>
             <tr><td class="ver">CAES version</td><td>Exact version string, for example <code>v0.2.0</code></td></tr>
             <tr><td>Claimed compliance level</td><td>Level 1, 2, or 3</td></tr>
-            <tr><td>Receipt signing algorithm</td><td>Named algorithm, for example <code>Ed25519</code></td></tr>
-            <tr><td>PolicyHash canonicalization method</td><td>Named method, for example <code>JCS/RFC 8785 + SHA-256</code></td></tr>
+            <tr><td>Receipt signing algorithm</td><td><code>EdDSA</code> or <code>ES256</code> for Level 2 interchange</td></tr>
+            <tr><td>PolicyHash profile</td><td>Effective policy bundle, RFC 8785, SHA-256, lowercase hex</td></tr>
+            <tr><td>Maximum execution lifetime</td><td><code>exp - iat</code>, at most 15 minutes for an interchange claim</td></tr>
+            <tr><td>Maximum clock skew</td><td>At most 120 seconds for an interchange claim</td></tr>
+            <tr><td>Stream mode</td><td><code>buffered</code> or <code>segmented</code></td></tr>
+            <tr><td>Evidence Pack version</td><td><code>0.2.0</code> when Level 2 or Level 3 is claimed</td></tr>
             <tr><td>Fail-closed enforcement description</td><td>How the system behaves under each failure mode</td></tr>
             <tr><td>Effect Boundary categories governed</td><td>Complete list of governed categories</td></tr>
             <tr><td>Write-then-verify mechanism</td><td>Description of receipt persistence and verification procedure</td></tr>
@@ -1373,7 +1524,7 @@
     </section>
 
     <section class="spec-section" id="reference">
-      <div class="section-num">Section 14</div>
+      <div class="section-num">Section 15</div>
       <h2>Reference implementation and governance</h2>
       <p>The CAES Working Group designates one reference implementation per version. Designation does not imply commercial endorsement. Other implementations may independently conform.</p>
       <div class="ref-impl-block">
@@ -1408,7 +1559,7 @@
     <!-- PART II -->
     <section class="spec-section" id="cpp">
       <div class="part-banner cpp">Part II · CPP v1.0</div>
-      <div class="section-num">Section 15 · Constitutional Policy Protocol</div>
+      <div class="section-num">Section 16 · Constitutional Policy Protocol</div>
       <h2>Purpose and scope</h2>
       <blockquote class="canon cpp">
         <p>A policy is not a configuration. It is a deterministic contract whose outcome can be proven, reproduced, and independently verified.</p>
@@ -1430,7 +1581,7 @@
     </section>
 
     <section class="spec-section" id="cpp-requirements">
-      <div class="section-num">Section 16 · CPP §3</div>
+      <div class="section-num">Section 17 · CPP §3</div>
       <h2>Core requirements</h2>
       <p>A CPP-compliant policy system MUST be:</p>
       <div class="normative-block">
@@ -1447,7 +1598,7 @@
     </section>
 
     <section class="spec-section" id="cpp-model">
-      <div class="section-num">Section 17 · CPP §4</div>
+      <div class="section-num">Section 18 · CPP §4</div>
       <h2>Canonical policy model</h2>
       <p>A CPP policy MUST conform to the following structure:</p>
 <pre><code>{
@@ -1482,7 +1633,7 @@
     </section>
 
     <section class="spec-section" id="cpp-evaluation">
-      <div class="section-num">Section 18 · CPP §5–§6</div>
+      <div class="section-num">Section 19 · CPP §5–§6</div>
       <h2>Deterministic evaluation and PolicyHash</h2>
       <p>Policy evaluation MUST NOT depend on:</p>
       <ul class="prohibit">
@@ -1502,22 +1653,23 @@
       <blockquote class="canon cpp"><p>If evaluation cannot be reproduced byte-for-byte, it is non-compliant.</p></blockquote>
 
       <h3>PolicyHash</h3>
-      <p>Each policy instance MUST produce a deterministic hash:</p>
-      <p class="formula">PolicyHash = hash(canonical(policy))</p>
+      <p>Each policy instance MUST produce a deterministic hash of the effective policy bundle (CPP-HASH-01):</p>
+      <p class="formula">PolicyHash = lowercase-hex(SHA-256(JCS(effective_policy_bundle)))</p>
+      <p>JCS is RFC 8785. The bundle is the declared policy after imports are resolved and defaults are expanded. Runtime context is excluded. Array order that changes meaning MUST be preserved. Duplicate property names are rejected. Strings are not Unicode-normalized.</p>
       <div class="normative-block">
         <div class="normative-header">Canonical binding</div>
         <div class="normative-body">
           <div class="req-row">
-            <div class="req-id">Canonicalize</div>
-            <div class="req-text">Canonicalization MUST remove key-ordering variance, whitespace differences, and encoding differences.</div>
+            <div class="req-id">CPP-HASH-02</div>
+            <div class="req-text">The hash input MUST be those JCS bytes, not a version label or a pointer.</div>
           </div>
           <div class="req-row">
-            <div class="req-id">Hash</div>
-            <div class="req-text">Hashing MUST use SHA-256 or stronger.</div>
+            <div class="req-id">CPP-HASH-03</div>
+            <div class="req-text">The digest MUST be SHA-256, encoded as lowercase hexadecimal.</div>
           </div>
           <div class="req-row">
-            <div class="req-id">Binding</div>
-            <div class="req-text">PolicyHash MUST be embedded in Decision Receipts, immutable after evaluation, and independently recomputable.</div>
+            <div class="req-id">CPP-HASH-04</div>
+            <div class="req-text">PolicyHash MUST be embedded in Level 2 and Level 3 Decision Receipts, immutable after evaluation, and independently recomputable from the bundle. Level 1 records are not required to carry it.</div>
           </div>
         </div>
       </div>
@@ -1525,7 +1677,7 @@
     </section>
 
     <section class="spec-section" id="cpp-binding">
-      <div class="section-num">Section 19 · CPP §7–§8</div>
+      <div class="section-num">Section 20 · CPP §7–§8</div>
       <h2>Evaluation output and decision binding</h2>
       <p>Every policy evaluation MUST produce:</p>
 <pre><code>{
@@ -1539,7 +1691,8 @@
       "priority": 0
     }
   ],
-  "disposition": "Approved | Denied | Modified | RequiresHumanAuthorization"
+  "disposition": "Approved | Denied | Modified | RequiresHumanAuthorization",
+  "enforcement_outcome": "authorized | blocked | denied | uncertain | not_applicable"
 }</code></pre>
       <div class="normative-block">
         <div class="normative-header">Output requirements</div>
@@ -1549,21 +1702,25 @@
             <div class="req-text">matched_rules MUST NOT be empty for Approved or Modified decisions.</div>
           </div>
           <div class="req-row">
-            <div class="req-id">Disposition</div>
-            <div class="req-text">disposition MUST match the CAES allowed values.</div>
+            <div class="req-id">CPP-OUT-02</div>
+            <div class="req-text">disposition is the policy decision and MUST be one of the four CAES values. It MUST NOT be overwritten when enforcement later blocks the effect.</div>
           </div>
           <div class="req-row">
-            <div class="req-id">Receipt</div>
-            <div class="req-text">Output MUST be bound to the Decision Receipt.</div>
+            <div class="req-id">CPP-OUT-03</div>
+            <div class="req-text">enforcement_outcome records whether authority was granted, blocked, denied, or uncertain.</div>
+          </div>
+          <div class="req-row">
+            <div class="req-id">CPP-OUT-04</div>
+            <div class="req-text">At Level 2 and Level 3 the output MUST be bound into the Decision Receipt. A Level 1 Decision Record MUST still carry disposition and the action binding. It is not required to carry policy_hash.</div>
           </div>
         </div>
       </div>
-      <p>CPP outputs MUST be embedded into CAES Decision Receipts. Each receipt MUST include <code>policy_id</code>, <code>policy_version</code>, <code>policy_hash</code>, <code>matched_rules</code>, and <code>disposition</code>.</p>
+      <p>At Level 2 and Level 3, CPP outputs MUST be embedded into the CAES Decision Receipt, including <code>policy_id</code>, <code>policy_version</code>, <code>policy_hash</code>, <code>matched_rules</code>, and <code>disposition</code>.</p>
       <blockquote class="canon cpp"><p>A decision without policy binding is not proof.</p></blockquote>
     </section>
 
     <section class="spec-section" id="cpp-conflict">
-      <div class="section-num">Section 20 · CPP §9–§11</div>
+      <div class="section-num">Section 21 · CPP §9–§11</div>
       <h2>Conflict resolution, denial, and obligations</h2>
       <h3>Conflict resolution</h3>
       <p>Policy systems MUST define a deterministic resolution strategy.</p>
@@ -1583,14 +1740,17 @@
       <h3>Obligations</h3>
       <p>Policies MAY define obligations that accompany decisions. Examples include logging requirements, human approval workflows, redaction transformations, and notification triggers.</p>
       <ul>
-        <li>Obligations MUST NOT override disposition.</li>
-        <li>Obligations MUST be auditable.</li>
-        <li>Obligations MUST be deterministic.</li>
+        <li>Each obligation MUST set <code>phase</code> to <code>pre_effect</code>, <code>continuous</code>, or <code>post_effect</code>. (CPP-OBL-01)</li>
+        <li>Obligations MUST NOT override disposition. (CPP-OBL-02)</li>
+        <li>Obligations MUST be auditable and deterministic. (CPP-OBL-03)</li>
+        <li>A failed <code>pre_effect</code> obligation MUST leave execution authority ungranted.</li>
+        <li>A failed <code>continuous</code> obligation MUST stop further covered effects. Bytes already released stay in the outcome evidence.</li>
+        <li>A failed <code>post_effect</code> obligation MUST be recorded with a remediation duty and MUST NOT be treated as undoing a completed effect.</li>
       </ul>
     </section>
 
     <section class="spec-section" id="cpp-change">
-      <div class="section-num">Section 21 · CPP §12–§14</div>
+      <div class="section-num">Section 22 · CPP §12–§14</div>
       <h2>Change control, behavior, and lifecycle</h2>
       <h3>Change control</h3>
       <ul>
@@ -1641,16 +1801,18 @@
     </section>
 
     <section class="spec-section" id="cpp-conformance">
-      <div class="section-num">Section 22 · CPP §16–§19</div>
+      <div class="section-num">Section 23 · CPP §16–§22</div>
       <h2>CPP conformance and CAES integration</h2>
       <p>A CPP-compliant system MUST publish:</p>
       <ul>
         <li>canonical policy schema</li>
-        <li>canonicalization method</li>
-        <li>hashing algorithm</li>
+        <li>canonicalization method, which for interchange is RFC 8785 over the effective policy bundle</li>
+        <li>hashing algorithm, which for interchange is SHA-256 lowercase hex</li>
         <li>evaluation engine description</li>
         <li>conflict resolution strategy</li>
-        <li>obligation execution model</li>
+        <li>obligation execution model, including the phase of each obligation type</li>
+        <li>tenant-selector rules and whether cross-tenant wildcards are installed</li>
+        <li>the action-to-disposition mapping</li>
       </ul>
       <div class="table-wrap">
         <table class="version-table">
@@ -1673,7 +1835,7 @@
     </section>
 
     <section class="spec-section" id="changes">
-      <div class="section-num">Section 23</div>
+      <div class="section-num">Section 24</div>
       <h2>Changes from v0.1.1</h2>
       <p>v0.2.0 is a hardening pass. The three primitives remain. The requirements around them are now testable. Full rationale is in <a href="../CAES_v0.2.0_CHANGES.md">CAES_v0.2.0_CHANGES.md</a>. CPP v1.0 is published with this version and is required from Level 2 upward.</p>
       <div class="table-wrap">
@@ -1695,6 +1857,7 @@
             <tr><td>Privacy</td><td>Capture, purpose limitation, retention, and deletion are governed actions.</td></tr>
             <tr><td>Conformance</td><td>Required-field table, including signing, canonicalization, and Level 3 attestation.</td></tr>
             <tr><td>CPP v1.0</td><td>Canonical policy contract. Required for Level 2 and Level 3.</td></tr>
+            <tr><td>Interoperability</td><td>Applicability matrix, JWS profile, effect composition, streaming, replay, obligation phases, chaos pass conditions, and Evidence Pack 0.2.0. Stable requirement IDs.</td></tr>
           </tbody>
         </table>
       </div>
@@ -1713,7 +1876,7 @@
               <td class="ver">v0.2.0</td>
               <td>Public Review</td>
               <td>March 2026</td>
-              <td>Hardening pass, plus CPP v1.0. This page.</td>
+              <td>Hardening pass, CPP v1.0, and the interoperability contracts. This page.</td>
             </tr>
           </tbody>
         </table>
@@ -1721,10 +1884,11 @@
     </section>
 
     <section class="spec-section" id="status">
-      <div class="section-num">Section 24</div>
+      <div class="section-num">Section 25</div>
       <h2>Status</h2>
       <p>CAES v0.2.0 is a public draft released for review and comment.</p>
       <p>This version supersedes v0.1.1. It introduces normative strengthening of the core primitives, compliance levels, fail-closed semantics, authorization-execution separation, decision dispositions, the Effect Boundary definition, behavioral governance, and privacy and recording requirements.</p>
+      <p>This public draft also includes the interoperability completion: separate Level 1 Decision Records and Level 2 receipts, the applicability matrix, the JWS profile, effect composition, the enforcement state machine, streaming, the replay lifecycle, obligation phases, chaos fixtures, and the v0.2.0 Evidence Pack annex. Where an earlier paragraph of this page conflicts with <a href="#contracts">Interoperability contracts</a>, the contracts control.</p>
       <p>Implementations conforming to v0.1.1 SHOULD review this version for new testable requirements before claiming v0.2.0 conformance.</p>
       <p>CPP v1.0 is a public draft. It is the canonical policy protocol for systems claiming CAES Level 2 or Level 3 under v0.2.0.</p>
       <p>Feedback and formal amendment proposals are welcome.</p>

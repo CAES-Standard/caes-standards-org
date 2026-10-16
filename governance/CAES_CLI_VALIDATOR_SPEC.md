@@ -1,7 +1,7 @@
 # CAES CLI Validator Specification
 
 **Applies To:** CAES v0.1.1
-**Revision note:** Not yet revised for CAES v0.2.0.
+**Revision note:** The command interface below is not the v0.2.0 normative text. Verification of a v0.2.0 pack follows `CAES_EVIDENCE_PACK_SPEC.md` version 0.2.0: offline, no call to a private issuer service, and success is not a report that the authorization is unused.
 **Category:** Reference Verification Interface  
 
 ---

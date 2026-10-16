@@ -29,7 +29,7 @@ CAES is a normative specification. Contributions must preserve structural clarit
 Amendment proposals must include:
 
 - Affected section
-- Normative requirement ID. v0.2.0 does not yet assign stable IDs. Cite the section heading until it does.
+- Normative requirement ID. v0.2.0 assigns stable IDs with the `CAES-` and `CPP-` prefixes. Cite the ID. Do not recycle an ID for a different obligation.
 - Structural issue description
 - Rationale
 - Backward compatibility implications

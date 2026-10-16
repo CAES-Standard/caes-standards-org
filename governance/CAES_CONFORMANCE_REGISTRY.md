@@ -2,7 +2,7 @@
 
 **Status:** Draft  
 **Applies To:** CAES v0.1.1
-**Revision note:** Not yet revised for CAES v0.2.0.
+**Revision note:** The registry model below is not the v0.2.0 normative text. A v0.2.0 listing still requires a complete Conformance Statement. When the claimed level is 2 or 3, the linked Evidence Pack must be pack spec 0.2.0.
 
 ---
 

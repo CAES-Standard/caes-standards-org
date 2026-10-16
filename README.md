@@ -19,6 +19,8 @@
 | [caes-standard-v0.2.0-draft.md](caes-standard-v0.2.0-draft.md) | Canonical CAES v0.2.0 text |
 | [CPP-v1.0.md](CPP-v1.0.md) | Canonical CPP v1.0 text |
 | [CAES_v0.2.0_CHANGES.md](CAES_v0.2.0_CHANGES.md) | What changed from v0.1.1, and why |
+| [governance/CAES_EVIDENCE_PACK_SPEC.md](governance/CAES_EVIDENCE_PACK_SPEC.md) | Evidence Pack annex 0.2.0 |
+| [conformance/CAES_v0.2.0_FIXTURES.md](conformance/CAES_v0.2.0_FIXTURES.md) | Interoperability fixtures for this draft |
 | [spec/caes-v0.1.1.html](spec/caes-v0.1.1.html) | Previous public draft |
 
 If the HTML rendering and the Markdown disagree, the Markdown governs.
@@ -109,22 +111,24 @@ An Effect Boundary is crossed whenever an AI system produces an output that can 
 | BehavioralInfluence | AI-generated output that influences a user decision with legal, financial, or regulatory consequence |
 | SensoryCapture | Recording, observation, or retention of audio, video, personal, or sensitive data |
 
+Categories are not mutually exclusive. One action can cross several of them. The composition rules are in the CAES draft under Interoperability Contracts.
+
 ---
 
 ## Core Primitives
 
-CAES formalizes three foundational objects. All three are required for Level 2. Level 1 requires the Decision Receipt at minimum.
+CAES formalizes three foundational objects. All three are required for Level 2. Level 1 requires a Decision Record. A Level 2 Decision Receipt is a signed Decision Record.
 
-1. **Decision Receipt**
-   A cryptographically signed, pre-execution authorization artifact. It proves a specific action was evaluated against a specific policy before execution. Denial Receipts carry the same signing, persistence, and ledger requirements as approval receipts.
+1. **Decision Record and Decision Receipt**
+   The Decision Record is the pre-effect artifact. It names one disposition and binds the action. At Level 1, checking it means a required field is present and the write-then-verify readback succeeded. A signature is not a Level 1 check. The Decision Receipt adds the JWS profile and the PolicyHash. Denial records use the persistence rules of the claimed level. Signing applies at Level 2 and Level 3.
 
 2. **PolicyHash**
-   A deterministic cryptographic fingerprint of the canonical policy state at evaluation time. SHA-256 or stronger. Embedded in the receipt, not referenced by pointer. See CPP for how the hash is produced.
+   Required at Level 2 and Level 3. `lowercase-hex(SHA-256(JCS(effective_policy_bundle)))`, with JCS as RFC 8785. The bundle is the declared policy after imports are resolved and defaults are expanded. It is not a Level 1 blocker.
 
 3. **Governed Spine**
-   An append-only, causally ordered, tenant-scoped record of governed events. Entries are not mutated. Ordering is assigned by the platform.
+   An append-only, causally ordered, tenant-scoped record of governed events. Spine requirements apply at Level 2 and Level 3.
 
-These primitives form the minimum constitutional substrate for AI execution.
+These primitives form the minimum constitutional substrate for AI execution. The applicability matrix in the draft is controlling where an earlier summary is shorter.
 
 ---
 
@@ -143,13 +147,13 @@ CPP is optional at Level 1 and **required at Level 2 and Level 3**. A CPP policy
 CAES defines three conformance tiers. Each tier is a strict superset of the previous. Partial conformance claims are non-compliant.
 
 ### Level 1 — Receipt-Bounded Execution
-All effect-boundary actions require verified Decision Receipts. Fail-closed enforcement. PolicyHash canonicalization, cryptographic signing, spine ordering, and offline verification are not Level 1 blockers.
+All effect-boundary actions require a structurally checked Decision Record before the effect. Fail-closed enforcement. PolicyHash, JWS signatures, the Governed Spine, and the Evidence Pack are not Level 1 blockers.
 
 ### Level 2 — Verifiable Evidence Chain
-All Level 1 requirements, plus cryptographic signing, PolicyHash canonicalization, an append-only spine, and offline-verifiable sealed artifacts. CPP v1.0 is required.
+All Level 1 requirements, plus the JWS profile (`EdDSA` or `ES256`), PolicyHash, an append-only spine, and an Evidence Pack at pack spec `0.2.0`. CPP v1.0 is required.
 
 ### Level 3 — Full Constitutional Conformance
-All Level 1 and Level 2 requirements, plus human authority delegation, complete causal invariants, effect classification, chaos attestation, and structured error codes. CPP v1.0 is required.
+All Level 1 and Level 2 requirements, plus human authority delegation, complete causal invariants, effect classification, the chaos fixtures, and structured error codes. CPP v1.0 is required. Each chaos mode has its own pass condition.
 
 Conformance claims must cite the CAES version and publish a complete Conformance Statement.
 
@@ -181,8 +185,12 @@ Implementations claiming CAES compliance **must publish** a Conformance Statemen
 
 - CAES version
 - Claimed compliance level
-- Receipt signing algorithm
-- PolicyHash canonicalization method
+- Receipt signing algorithm (`EdDSA` or `ES256` for Level 2 interchange)
+- PolicyHash profile (effective bundle, RFC 8785, SHA-256, lowercase hex)
+- Maximum execution lifetime (`exp - iat`, at most 15 minutes for an interchange claim)
+- Maximum clock skew (at most 120 seconds for an interchange claim)
+- Stream mode (`buffered` or `segmented`)
+- Evidence Pack version (`0.2.0` when Level 2 or Level 3 is claimed)
 - Fail-closed enforcement description
 - Effect Boundary categories governed
 - Write-then-verify mechanism
@@ -193,7 +201,9 @@ Implementations claiming CAES compliance **must publish** a Conformance Statemen
 
 Unversioned or incomplete claims are non-conformant. Statements may be self-attested, and self-attested statements must be labeled as such. Self-attestation is not certification by the CAES Working Group.
 
-Where CPP applies, the implementation must also publish its policy schema, canonicalization method, hashing algorithm, evaluation engine, conflict-resolution strategy, and obligation model.
+Where CPP applies, the implementation must also publish its policy schema, canonicalization method, hashing algorithm, evaluation engine, conflict-resolution strategy, obligation model (including phase), tenant-selector rules, and the action-to-disposition mapping.
+
+Interoperability fixtures for this draft are in [conformance/CAES_v0.2.0_FIXTURES.md](conformance/CAES_v0.2.0_FIXTURES.md). The Evidence Pack annex is [governance/CAES_EVIDENCE_PACK_SPEC.md](governance/CAES_EVIDENCE_PACK_SPEC.md).
 
 ---
 

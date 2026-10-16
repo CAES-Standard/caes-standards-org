@@ -1,298 +1,139 @@
 # CAES Test Suite Specification
 
-**Applies To:** CAES v0.1.1 (Draft)
-**Revision note:** Not yet revised for CAES v0.2.0. The v0.2.0 level tables are the current test source until this suite is revised.
-**Working Group:** CAES-WG  
-**Category:** Normative Test Requirements  
+**Applies To:** CAES v0.2.0 and CPP v1.0
+**Status:** Public draft
+**Working Group:** CAES-WG
+**Category:** Normative test requirements
+
+The v0.1.1 labels `AUTH-01`, `EVID-01`, and the rest of that set are not v0.2.0 requirement IDs. Tests for this version MUST cite the `CAES-` and `CPP-` IDs in the drafts. Vectors and pass conditions are in `conformance/CAES_v0.2.0_FIXTURES.md`.
+
+A test suite does not certify an implementation. It checks structural compliance against the published requirements for the claimed level.
 
 ---
 
-## 1. Purpose
+## 1. Principles
 
-This document defines the minimum requirements for a CAES Conformance Test Suite.
+A CAES conformance test suite MUST:
 
-A CAES Test Suite must validate that an implementation satisfies the normative requirements defined in the applicable CAES version.
+- Test the claimed level, and the levels below it.
+- Treat Level 1 "unverifiable" as a missing required field or a failed readback. It MUST NOT fail a Level 1 implementation for a missing signature, PolicyHash, spine, or Evidence Pack.
+- At Level 2 and Level 3, require the JWS profile, PolicyHash profile, spine, and pack spec 0.2.0.
+- Map every test to a requirement ID.
+- Be reproducible from the fixture inputs.
+- Not depend on undocumented internal state.
+- Name the CAES version and the compliance level.
 
-A CAES Test Suite does not certify an implementation.  
-It verifies structural compliance against published requirements.
-
----
-
-## 2. Test Suite Principles
-
-A CAES Conformance Test Suite MUST:
-
-- Test structural invariants, not UI behavior.
-- Validate deterministic enforcement.
-- Verify cryptographic integrity properties.
-- Confirm fail-closed execution behavior.
-- Validate evidence artifacts offline.
-- Map tests explicitly to requirement IDs.
-
-Tests MUST be reproducible.
-
-Tests MUST not depend on internal undocumented state.
-
-Tests MUST identify which CAES version they target.
+Level 2 and Level 3 test-result artifacts MUST follow the Evidence Pack annex. Level 1 results MUST still name the version and the level. They are not required to be signed.
 
 ---
 
-## 3. Test Categories
+## 2. Requirement map
 
-The CAES Test Suite is divided into five categories.
+| Test | IDs | Level |
+| :--- | :--- | :--- |
+| PRE-T1 Pre-effect record | CAES-PRE-01, CAES-PRE-02, CAES-PRE-03 | 1+ |
+| PRE-T2 One disposition | CAES-DSP-01 | 1+ |
+| SIG-T1 JWS profile | CAES-SIG-01, CAES-SIG-02, CAES-SIG-03, CAES-SIG-05 | 2+ |
+| SIG-T2 Key identity | CAES-SIG-04 | 2+ |
+| SIG-T3 Time bounds | CAES-SIG-06, CAES-SIG-07 | 2+ |
+| HASH-T1 Effective bundle | CAES-HASH-01, CAES-HASH-02, CPP-HASH-01, CPP-HASH-02, CPP-HASH-03, CPP-HASH-04 | 2+ |
+| SPN-T1 Append-only spine | CAES-SPN-01 | 2+ |
+| PAK-T1 Evidence Pack | CAES-PAK-01 | 2+ |
+| STA-T1 Three states | CAES-STA-01, CAES-STA-02, CAES-STA-03, CPP-OUT-02, CPP-OUT-03 | 1+ |
+| EFF-T1 Composition | CAES-EFF-01, CAES-EFF-02, CPP-EFF-01 | 2+ |
+| TEN-T1 Tenant selectors | CPP-TEN-01 | 2+ |
+| ACT-T1 Action mapping | CPP-ACT-01, CPP-ACT-02, CPP-ACT-03, CPP-ACT-04 | 2+ |
+| OBL-T1 Obligation phases | CAES-OBL-01, CPP-OBL-01, CPP-OBL-02, CPP-OBL-03 | 2+ |
+| STR-T1 Streaming | CAES-STR-01, CAES-STR-02, CAES-STR-03 | 1+ |
+| REP-T1 Replay lifecycle | CAES-REP-01, CAES-REP-02, CAES-REP-03 | 1+ |
+| CH-T1 Chaos modes | CAES-CH-00, CAES-L3-01, CAES-L3-02 | 3 |
+| PRV-T1 Recording obligations | CAES-PRV-01, CAES-PRV-02 | 1+ |
 
----
-
-## 3.1 Authorization Tests (AUTH)
-
-### AUTH-T1 — Pre-Execution Enforcement
-
-**Requirement Coverage:** AUTH-01, AUTH-02, AUTH-04, AUTH-05
-
-Test must verify:
-
-- An Effect Boundary action cannot execute without a Decision Receipt.
-- Execution fails when receipt is absent.
-- Execution fails when receipt signature is invalid.
-- Execution fails when PolicyHash does not match evaluated state.
-
-Expected result:
-Execution denied with recorded failure event.
-
----
-
-### AUTH-T2 — Deterministic PolicyHash
-
-**Requirement Coverage:** AUTH-03, AUTH-03a
-
-Test must verify:
-
-- Identical canonical policy representations produce identical PolicyHash values.
-- Field ordering changes do not alter PolicyHash.
-- Whitespace differences do not alter PolicyHash.
-- Semantically different policies produce different hashes.
-
-Expected result:
-Hash determinism confirmed.
+CPP is not required at Level 1 (CAES-CPP-01). Level 2 and Level 3 suites MUST include the CPP rows.
 
 ---
 
-## 3.2 Evidence Integrity Tests (EVID)
+## 3. Required checks
 
-### EVID-T1 — Signature Verification
+### PRE-T1 — Pre-effect record
 
-**Requirement Coverage:** EVID-01, EVID-01a
+The effect does not start until a Decision Record exists, the write has been read back, and the bytes match. A missing record, a failed readback, or a record written after the effect is a failure. A storage acknowledgment without readback is a failure.
 
-Test must verify:
+### PRE-T2 — Disposition
 
-- Decision Receipt signature validates using declared trust root.
-- Verification succeeds offline.
-- Tampered receipt fails verification.
+The record names exactly one of `Approved`, `Modified`, `Denied`, or `RequiresHumanAuthorization`. A missing disposition is a Level 1 structural failure.
 
-Expected result:
-Independent verification passes for valid receipt and fails for modified receipt.
+### SIG-T1 — JWS profile
 
----
+Level 2 and Level 3 only. The receipt is flattened JWS JSON. `alg` is `EdDSA` or `ES256`. `typ` is `caes-receipt+jws`. `none` and shared-secret algorithms fail. Required claims from CAES-SIG-05 are present. The fixture receipt verifies. A flipped signature bit fails.
 
-### EVID-T2 — Append-Only Spine
+### SIG-T2 — Key identity
 
-**Requirement Coverage:** EVID-03, EVID-03a
+An unknown or revoked `kid` grants no execution authority. A signature under either key inside a published rotation overlap is accepted. Overlap is not by itself a denial.
 
-Test must verify:
+### SIG-T3 — Time bounds
 
-- Spine entries cannot be overwritten.
-- Spine entries cannot be deleted.
-- Spine entries cannot be modified.
-- Every event contains causal parent reference(s).
-- Tenant scope is declared on every event.
+`iat` and `exp` are RFC 3339. For an interchange claim, `exp - iat` greater than 15 minutes grants no execution authority, and skew beyond 120 seconds grants none. Archival verification may still report that the signature matches and MUST label the time untrusted. `exp` does not erase an archived receipt. Verification MUST NOT report that the authority is unused.
 
-Expected result:
-Mutation attempts rejected. Causal reconstruction succeeds.
+### HASH-T1 — Effective bundle
 
----
+The hash input is the JCS bytes of the effective bundle. The fixture positive vector matches. Key order and insignificant whitespace do not change the hash. A different rule action does. A version label or a pointer as the hash input fails.
 
-### EVID-T3 — Terminal Outcome Integrity
+### SPN-T1 — Spine
 
-**Requirement Coverage:** EVID-04, CI-02
+Level 2 and Level 3. An append failure means the effect does not proceed. Existing entries cannot be modified or deleted in place. Level 1 does not fail this test for the absence of a spine.
 
-Test must verify:
+### PAK-T1 — Evidence Pack
 
-- Every executed action produces exactly one terminal Outcome.
-- Progress telemetry does not satisfy terminal requirement.
-- Missing Outcome results in test failure.
+Level 2 and Level 3. The pack meets pack spec 0.2.0. Verification uses no issuer network call. A missing entry fails. A partial export does not verify as sealed. Offline success is not reported as unused authority.
 
-Expected result:
-Single terminal Outcome per Action.
+### STA-T1 — Three states
 
----
+An `Approved` disposition remains `Approved` when a later obligation blocks the effect. `enforcement_outcome` records the block. Outcome evidence does not rewrite the disposition.
 
-## 3.3 Failure Handling Tests (FAIL)
+### EFF-T1 — Composition
 
-### FAIL-T1 — Fail-Closed Enforcement
+An `ExternalInvocation` that also changes governance state and workflow state is evaluated against every applicable category. Dropping a category fails the test. An action that lists `SafetyCriticalActuation` is Denied under this version.
 
-**Requirement Coverage:** FAIL-01
+### TEN-T1 — Tenant selectors
 
-Test must verify:
+Comparison is exact code points. `*` is the only wildcard. A tenant identifier equal to `*` is rejected. A `*` policy without a `cross_tenant_policy` delegation is ineligible.
 
-- Authorization subsystem failure results in execution denial.
-- System does not proceed under ambiguity.
+### ACT-T1 — Action mapping
 
-Expected result:
-Execution halted.
+`allow` does not execute after authority expires. `deny` has no effect. `modify` that executes the pre-transform payload fails. `escalate` does not execute on the disposition alone.
 
----
+### OBL-T1 — Obligation phases
 
-### FAIL-T2 — Failure Recording
+A failed `pre_effect` obligation grants no authority. A failed `continuous` obligation stops further covered bytes and keeps the bytes already released in the outcome evidence. A failed `post_effect` obligation is recorded as remediation and is not described as undoing the effect.
 
-**Requirement Coverage:** FAIL-02
+### STR-T1 — Streaming
 
-Test must verify:
+The implementation's Conformance Statement names `buffered` or `segmented`. In `buffered` mode, no governed byte leaves before one receipt covers the complete output. In `segmented` mode, each segment is hashed and covered before its first byte. A completion record produced after unknown bytes have already left fails the test.
 
-- Authorization failure generates recorded spine event.
-- Silent continuation is not permitted.
+### REP-T1 — Replay lifecycle
 
-Expected result:
-Failure event recorded.
+Reservation of `(issuer, tenant_id, audience, action_id, payload_hash, receipt_id)` is atomic and durable before the effect. A second reservation does not execute. A crash before any effect can return to `Abandoned` and retry inside `exp`. A crash after the effect and before completion becomes `Uncertain`. A fresh receipt does not repeat that effect while the state is `Uncertain`. Offline verification does not report the authority unused.
+
+### CH-T1 — Chaos modes
+
+Level 3. Each of the eight modes meets the pass condition in the CAES chaos table and in the fixture document. A test that only checks for a shared error code fails. Two modes at once still require every applicable prevention and every applicable evidence record.
+
+### PRV-T1 — Recording
+
+Observation or recording without the decision required at the claimed level fails. The legal-actor sentence is not a test. CAES-PRV-02 is: an attributable decision, an identified operator, authorization before capture or use, and an auditable effect.
 
 ---
 
-### FAIL-T3 — Pre-Execution Spine Commit
+## 4. Results
 
-**Requirement Coverage:** FAIL-03
+A result file MUST include the run identifier, CAES version, implementation identifier, compliance level, pass or fail per test ID, and an RFC 3339 timestamp.
 
-Test must verify:
+Unsigned Level 2 or Level 3 reports are informational only. They do not satisfy the Evidence Pack annex.
 
-- If spine append fails before execution, no partial action persists.
-- No external mutation occurs.
-
-Expected result:
-Atomic rollback behavior confirmed.
+Failure of a required test, omission of a required test, or a missing requirement-ID mapping invalidates the conformance claim for that level. Passing this suite is not certification by CAES-WG, and it is not evidence that a second implementation interoperates.
 
 ---
 
-## 3.4 Causal Chain Tests (CI)
-
-### CI-T1 — Single Trigger Invariant
-
-**Requirement Coverage:** CI-01
-
-Test must verify:
-
-- Exactly one Trigger exists per spine.
-- Retry references original Trigger identity.
-- Scheduled invocations create new Trigger.
-
-Expected result:
-Trigger invariant preserved.
-
----
-
-### CI-T2 — Causal Reconstruction
-
-**Requirement Coverage:** CI-05
-
-Test must verify:
-
-- All spine events include sufficient parent references.
-- Deterministic partial order can be reconstructed.
-- No orphan events exist.
-
-Expected result:
-Full causal reconstruction possible.
-
----
-
-## 3.5 Effect Boundary Tests (EB)
-
-### EB-T1 — Hard Boundary Enforcement
-
-Test must verify:
-
-- Digital mutation requires receipt.
-- External invocation requires receipt.
-- Physical actuation requires receipt.
-
-Expected result:
-Unauthorized hard effects blocked.
-
----
-
-### EB-T2 — Soft Boundary Classification
-
-Test must verify:
-
-- Communication and behavioral outputs are classified correctly.
-- Classification does not bypass receipt requirement where declared in scope.
-
-Expected result:
-Effect classification aligned with Conformance Statement.
-
----
-
-## 4. Test Suite Structure Requirements
-
-A conformant CAES Test Suite MUST:
-
-- Map each test to CAES requirement IDs.
-- Produce machine-readable output.
-- Produce a signed test result summary.
-- Identify CAES version tested.
-- Declare compliance level tested.
-
-Optional:
-- Public test report publication.
-
----
-
-## 5. Test Result Artifact
-
-A CAES Test Suite MUST produce:
-
-- Test run identifier
-- CAES version
-- Implementation identifier
-- Compliance level tested
-- Pass/fail summary
-- Timestamp
-- Signature over test results
-
-Unsigned test reports are informational only.
-
----
-
-## 6. Reference Implementation Validation
-
-The CAES Reference Implementation must pass:
-
-- All tests for the claimed compliance level.
-- All lower-tier tests implicitly.
-
-Failure in any required test invalidates conformance claim.
-
----
-
-## 7. Non-Conformance
-
-An implementation fails CAES conformance if:
-
-- Any required test fails.
-- Any required test is omitted.
-- Evidence verification fails.
-- Fail-closed behavior is not demonstrated.
-- Test suite does not map to requirement IDs.
-
----
-
-## 8. Future Expansion
-
-Future CAES versions may introduce:
-
-- Formal machine-readable test harness specification
-- Standardized evidence pack format for test validation
-- Public conformance registry
-- Automated verification CLI
-
----
-
-CAES-WG  
-March 2026
+CAES-WG
+v0.2.0 public draft
