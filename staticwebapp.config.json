@@ -4,11 +4,6 @@
       "route": "/spec",
       "redirect": "/spec/caes-v0.2.0.html",
       "statusCode": 302
-    },
-    {
-      "route": "/spec/",
-      "redirect": "/spec/caes-v0.2.0.html",
-      "statusCode": 302
     }
   ],
   "responseOverrides": {
